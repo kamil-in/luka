@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+members = ["crates/fma-fetch", "crates/fma-player", "crates/fma-display", "crates/fma-wasm", "apps/desktop", "apps/web-server", "spike"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-only"
+
+# The emulator (MIT), pinned to one commit so its internal API can't move under us.
+[workspace.dependencies]
+fm1-core = { git = "https://github.com/joakimeriksson/fm1-emu.git", rev = "883e10f8b37d25dbac1786cc6370f459a8f3d4a4" }
+fm1-soc = { git = "https://github.com/joakimeriksson/fm1-emu.git", rev = "883e10f8b37d25dbac1786cc6370f459a8f3d4a4" }
+
+[profile.release]
+opt-level = 3
+lto = true

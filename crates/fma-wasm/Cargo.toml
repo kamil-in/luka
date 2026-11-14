@@ -1,0 +1,19 @@
+[package]
+name = "fma-wasm"
+description = "The player for a browser: fma-display's Player behind plain WebAssembly exports"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+fma-display = { path = "../fma-display" }
+fma-player = { path = "../fma-player" }
+serde_json = "1"
+
+# (for the JIT's compile budget, which only the browser build has)
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+fm1-core.workspace = true

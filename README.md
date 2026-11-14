@@ -1,0 +1,153 @@
+# Luka
+
+An application for playing community firmwares for the **M-VAVE FM-1** pocket synthesizer without the physical hardware. Pick a firmware from the list and it plays with the device's screen, keys, knobs, and sound.
+
+Luka plays each firmware's **own browser build**: many authors compile their firmware's source to WebAssembly and publish it. Played that way a firmware costs about 1% of a core.
+
+Two clients share a single front-panel UI (`ui/`), which is the same page in both:
+1. **Web App**: served by a small local server, runs in the browser.
+2. **Desktop App**: a Tauri window around the same page, which reads the builds from disk.
+
+---
+
+## What it does
+
+* A list of **20 firmwares**, sorted a to z, with a search box (every word must match the name or repository; an **×** clears it, so does Escape).
+* **Play** starts a firmware; the heading shows its name. Its repository is linked under the name (in the desktop app it opens in the system browser).
+* The front panel: 240×240 screen, 27 keys, 14 buttons, 7 knobs, and the LEDs. Keys can be clicked or typed (`a` to `'`, with `w e t y u o p` for the black keys, `z` `x` for the octave).
+* **Light and dark**: a button in the bar switches them; without a choice it follows the system.
+* What a firmware saves is kept per browser (IndexedDB) or per desktop window.
+
+---
+
+## Architecture & Principles
+
+* **Independent of External Hubs**: no firmware hub services or IDs.
+* **Modular Separation**: fetching (`fma-fetch`), playing (`fma-player`) and display/protocol (`fma-display`) are separate crates. The UI talks only to a transport (`Command` and `Event` messages), so a new client is a new transport file.
+* **Browser builds**: `ui/web/native-worklet.js` adapts each build's exported functions to one set of messages. `ui/web/native-kinds.js` works out from a build's exports which family it is (used both at import time and when a build starts).
+* **Emulator kept**: `.fwsc` packages can still be emulated (`fm1-emu` core, in Rust natively and in WebAssembly for the browser). The current page does not offer them; the code and tests remain.
+* **Audio-First Performance**: browser builds and the emulator run inside an `AudioWorklet` at 44.1 kHz, one tick per 128-frame block, so there is no timer jitter.
+
+---
+
+## Repository Layout
+
+```
+crates/fma-fetch         Link resolution, GitHub release downloading, package caching
+crates/fma-player        Emulator trait, panel ids, fm1-emu wrapper
+crates/fma-display       Command/Event protocol, Transport trait, player pacing, native Session
+crates/fma-wasm          The emulator compiled to wasm for the browser
+apps/desktop             Desktop client (Tauri); Rust commands that read the builds from disk and open links
+apps/web-server          Static server + GitHub proxy + the builds at /native/
+ui/                      The front panel: index.html, style.css, app.js (plain HTML/CSS/JS, no bundler)
+ui/web/transport-web.js  The transport both clients use: list, storage, routing to a player
+ui/web/native-worklet.js A firmware's own browser build, in the audio thread (all families)
+ui/web/native-kinds.js   Which family a build is, from its exports
+ui/web/player-worklet.js The emulator in the audio thread
+ui/transport-tauri.js    The first desktop transport (Rust emulator + sound card); not used by the page at present
+tools/build-web.ps1      Builds the wasm emulator (fma-wasm)
+tools/import-builds.mjs  Takes firmwares/dist/*.wasm into .cache/native and writes the list the app shows
+tools/fetch-native.mjs   Alternative: downloads the builds from the authors' sites
+tools/native-builds.json Catalog for fetch-native.mjs
+firmwares/               Clones of the firmware repositories, build scripts, dist/ and per-build interface docs
+spike/                   Throwaway experiments; safe to delete
+```
+
+---
+
+## Prerequisites
+
+* **Operating System**: Windows (PowerShell)
+* **Rust**: stable, with the wasm target:
+  ```powershell
+  rustup target add wasm32-unknown-unknown
+  ```
+* **Node.js**: 20+ (24 recommended), for the tools only
+* **Git** on `PATH`
+
+---
+
+## Getting the firmwares
+
+The app lists whatever is in `.cache/native/` (git-ignored). To fill it:
+
+```powershell
+# 1. Clone/update the firmware repositories and collect their browser builds into firmwares/dist/
+#    (also double-clickable: firmwares\build-all.cmd)
+.\firmwares\build-firmwares.ps1
+
+# 2. Copy them into .cache/native and write the list the app shows
+node tools\import-builds.mjs
+```
+
+Step 1 also writes the interface specifications to [`firmwares/INTERFACES.md`](firmwares/INTERFACES.md) and [`firmwares/docs/`](firmwares/docs/). `node tools\fetch-native.mjs` is an alternative to both steps for the builds listed in `tools/native-builds.json` (it downloads them from the authors' sites). The import merges with what is already in the cache.
+
+---
+
+## Running the Application
+
+### Web App
+
+```powershell
+cargo run --release -p fma-web-server        # http://127.0.0.1:8787  (PORT or --port to change)
+```
+
+The emulator's wasm (`tools\build-web.ps1`) is only needed for emulating packages. Open `http://127.0.0.1:8787`.
+
+*Data*: the browser's `IndexedDB` database `fma`, plus `localStorage` (`luka.theme`, `fma.clock`).
+
+### Desktop App (Tauri)
+
+```powershell
+cargo run --release -p fma-desktop
+```
+
+It reads the builds from `.cache/native` (found from the working directory or the program's folder; `FMA_NATIVE` points elsewhere), so run the import first. Sound goes through the window's Web Audio.
+
+*Data*: `%APPDATA%\dev.fm1adapter.desktop` (the window's storage and, for the emulator path, packages and saves).
+
+If a build fails with "failed to remove file ... .exe", an old copy of the program is still running: stop it first.
+
+---
+
+## Supported Firmware Families
+
+All 20 listed firmwares play. A build's family decides which adapter code path handles it:
+
+| Family | Firmwares | Notes |
+|---|---|---|
+| `felucca` | FMini-1, Skiff | masks by printed label, 1 MiB flash image |
+| `x0x` | AMB-1, X0X, Niagara Drift, MONK-1, Loom, Mutable Dreams, FRASIL, ZEN-1, FiMba-1, Aisling, SATIE-1, Nachtfahrt | `web_fb` + `web_blits`, named storage objects |
+| `melodee` | Melodee | this panel's own ids, no storage |
+| `sim` | OberVave, S1Vave | `sim_*` names, state as blobs |
+| `asyncify` | GR!MM, Arctic Scream | main loop run as a coroutine by the worklet |
+| `coralflower` | CoralFlower | felucca-like, real WASI clock, 1 MiB flash staged before boot |
+
+Felucca itself publishes no browser build and SLOOP is a sound engine without a panel: neither is listed. A browser build is whatever its author last published, and builds keep their authors' licences (mostly GPL-3.0).
+
+---
+
+## Running Tests
+
+Release mode is needed for the emulator tests (they also need `.cache/firmware/felucca-1.8.2.fwsc`):
+
+```powershell
+cargo test --release -p fma-fetch -p fma-player -p fma-display -p fma-desktop -p fma-web-server
+
+# Live GitHub resolution tests (network)
+cargo test -p fma-fetch --test live -- --ignored --nocapture
+```
+
+---
+
+## Audio Notes
+
+* **Browser builds** (both clients): run inside the audio worklet, 128 frames per block, `AudioContext` fixed at 44.1 kHz so nothing is resampled. `fma.stats()` in the console shows the audio thread's load.
+* **Emulator, web**: the default clock is 120 MHz with automatic step-down (240, 160, 120, 100, 80, 60) when blocks run late; `?mhz=N`, `?latency=N` and `?native=0` are switches for experiments.
+* **Emulator, desktop (Rust)**: `Session` paces with `try_recv` and short sleeps, and the sound output corrects drift from a smoothed buffer level. `FMA_AUDIO_LOG=1` prints buffer statistics once a second. Do not change these without measuring.
+
+---
+
+## License
+
+GNU General Public License v3.0 (GPL-3.0-only). See [LICENSE](LICENSE). See [THIRD-PARTY.md](THIRD-PARTY.md) for third-party notices (including `joakimeriksson/fm1-emu`, MIT-licensed and GPL-compatible). Community firmware binaries remain under their authors' licences.

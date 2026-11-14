@@ -1,0 +1,12 @@
+[package]
+name = "fma-player"
+description = "Run a firmware package: an Emulator trait, and the fm1-emu crates behind it"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+fm1-core.workspace = true
+fm1-soc.workspace = true
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"

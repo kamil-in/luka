@@ -1,0 +1,141 @@
+/* Flat, sharp, two colours and one signal. Paper and ink swap in the dark; nothing is
+   rounded but the knobs, nothing has a shadow, and every edge is the same hairline. */
+/* Light is the base; dark is the system's choice, unless the user chose (data-theme, set by
+   the button in the bar and kept in this browser). */
+:root {
+  --paper: #f0eee9; --ink: #1c1c1c; --mute: #7d7b76; --signal: #ff4a1c; --key: #fbfaf7;
+  --screen-edge: #1c1c1c; --screen-out: transparent; --black-key-edge: #1c1c1c;
+  --line: 1.5px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #161616; --ink: #f0eee9; --mute: #8f8d88; --key: #f0eee9;
+    --screen-edge: #000; --screen-out: #f0eee9; --black-key-edge: #f0eee9;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #161616; --ink: #f0eee9; --mute: #8f8d88; --key: #f0eee9;
+  --screen-edge: #000; --screen-out: #f0eee9; --black-key-edge: #f0eee9;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--paper); }
+body {
+  margin: 0; min-height: 100vh; display: flex; flex-direction: column; color: var(--ink); background: var(--paper); user-select: none;
+  font: 500 15px/1.25 "Neue Haas Grotesk Display Pro", "Neue Haas Grotesk Text Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: -0.02em; text-transform: lowercase;
+}
+/* a light smoothing of the headings alone (it shows where the system lets a page choose: macOS) */
+h1, h2, h3 { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: geometricPrecision; }
+.mute { color: var(--mute); }
+
+/* scrollbars: a flat bar in the ink colour, square, no arrows */
+::-webkit-scrollbar { width: 8px; height: 8px; background: transparent; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink); border-radius: 0; }
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+::-webkit-scrollbar-corner { background: transparent; }
+@supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin; scrollbar-color: var(--ink) transparent; } }
+
+/* ---------------------------------------------------------------- the bar */
+header { display: flex; align-items: baseline; gap: 24px; padding: 14px 24px; background: var(--ink); color: var(--paper); }
+h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.03em; white-space: nowrap; }
+#theme { flex: none; align-self: center; padding: 4px 12px; color: var(--paper); border-color: var(--paper); }
+#theme:hover { background: var(--paper); color: var(--ink); }
+#status { flex: 1; text-align: right; text-transform: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .75; }
+#status.bad { opacity: 1; color: var(--signal); white-space: normal; }
+
+/* ---------------------------------------------------------------- the page */
+main { flex: 1; min-height: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 48px; padding: 32px 24px 40px; max-width: 1500px; width: 100%; }
+/* wide: the page is the window's height, and the firmware list alone scrolls (the panel stays where it is) */
+@media (min-width: 1081px) {
+  body { height: 100vh; }
+  aside { display: flex; flex-direction: column; min-height: 0; }
+  #lists { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 14px; margin-right: -14px; }
+  section { min-height: 0; overflow-y: auto; }
+}
+@media (max-width: 1080px) { main { grid-template-columns: 1fr; gap: 40px; } #lists { max-height: 60vh; overflow-y: auto; } }
+h2 { margin: 0 0 6px; min-height: .95em; font-size: clamp(40px, 5vw, 64px); font-weight: 600; line-height: .95; letter-spacing: -0.045em; }
+
+/* ---------------------------------------------------------------- controls */
+button { font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink); background: none; border: var(--line) solid var(--ink); border-radius: 0; padding: 8px 14px; cursor: pointer; }
+button:hover { background: var(--ink); color: var(--paper); }
+button.solid { background: var(--ink); color: var(--paper); }
+button.solid:hover { background: var(--signal); border-color: var(--signal); color: #1c1c1c; }
+button.compact { padding: 4px 12px; }
+.list li.playing button.solid { background: var(--signal); border-color: var(--signal); color: #1c1c1c; }
+.list li.playing button.solid:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+button.text { border: 0; padding: 0; }
+button.text::before { content: "["; }
+button.text::after { content: "]"; }
+button.text:hover { background: none; color: var(--signal); }
+:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+#find { position: relative; margin-top: 10px; }
+#search { display: block; width: 100%; padding: 10px 28px 10px 0; border: 0; border-bottom: var(--line) solid var(--ink); border-radius: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-transform: none; user-select: text; -webkit-appearance: none; appearance: none; }
+#search::placeholder { color: var(--mute); }
+#search::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+#clear { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; padding: 0; border: 0; font-size: 20px; line-height: 1; color: var(--mute); }
+#clear[hidden] { display: none; }
+#clear:hover { background: none; color: var(--signal); }
+#search:focus { outline: 0; border-bottom-color: var(--signal); box-shadow: 0 var(--line) 0 var(--signal); }
+
+.list { list-style: none; margin: 20px 0 0; padding: 0; counter-reset: fw; }
+.list li { counter-increment: fw; display: grid; grid-template-columns: 2.2em 1fr; padding: 12px 0; border-top: var(--line) solid var(--ink); }
+.list li:last-child { border-bottom: var(--line) solid var(--ink); }
+.list li::before { content: counter(fw) "."; font-feature-settings: "tnum"; }
+.list li.empty { display: block; color: var(--mute); }
+.list li.empty::before { content: none; }
+.list li.playing::before { content: "●"; color: var(--signal); }
+.list li.unplayable { color: var(--mute); }
+.list .name { font-size: 19px; overflow-wrap: anywhere; }
+.list .meta { color: var(--mute); font-size: 13px; overflow-wrap: anywhere; text-transform: none; }
+.list a.meta { display: inline-block; text-decoration: none; }
+.list a.meta:hover { color: var(--signal); text-decoration: underline; text-underline-offset: 3px; }
+.list .row { display: flex; gap: 14px; margin-top: 8px; }
+
+h3 { margin: 0; font-size: 30px; font-weight: 600; line-height: 1; letter-spacing: -0.04em; }
+
+/* ---------------------------------------------------------------- the device */
+#device {
+  margin-top: 18px; padding: 28px; border: var(--line) solid var(--ink);
+  display: grid; grid-template-columns: minmax(150px, 1fr) auto minmax(300px, 1.6fr); grid-template-areas: "left screen right" "keys keys keys"; gap: 28px 32px; align-items: start;
+}
+@container (max-width: 880px) { #device { grid-template-columns: 1fr; grid-template-areas: "screen" "left" "right" "keys"; justify-items: stretch; } #screen { justify-self: center; } }
+#left { grid-area: left; display: grid; gap: 24px; }
+#right { grid-area: right; display: grid; gap: 24px; }
+#screen { grid-area: screen; width: min(300px, 70vw); aspect-ratio: 1; height: auto; image-rendering: pixelated; background: #000; border: 10px solid var(--screen-edge); outline: var(--line) solid var(--screen-out); }
+
+.knobs { display: grid; gap: 18px 12px; justify-items: center; }
+.knobs.two { grid-template-columns: repeat(2, 1fr); }
+.knobs.four { grid-template-columns: repeat(4, 1fr); }
+.knob { --turn: 0deg; width: 100%; max-width: 76px; text-align: center; cursor: ns-resize; touch-action: none; }
+.knob::before {
+  content: ""; display: block; aspect-ratio: 1; border: var(--line) solid var(--ink); border-radius: 50%; transform: rotate(var(--turn));
+  background: linear-gradient(var(--ink), var(--ink)) 50% 0 / var(--line) 50% no-repeat;
+}
+.knob:hover::before, .knob.turning::before { background-color: color-mix(in srgb, var(--ink) 8%, transparent); }
+.knob.turning::before { border-color: var(--signal); background-image: linear-gradient(var(--signal), var(--signal)); }
+.knob::after { content: attr(data-label); display: block; margin-top: 8px; font-size: 13px; white-space: nowrap; }
+
+.buttons { display: grid; gap: 8px; }
+.buttons.two { grid-template-columns: repeat(2, 1fr); }
+.buttons.six { grid-template-columns: repeat(6, 1fr); }
+.btn { --led: 0; padding: 14px 0; font-size: 13px; touch-action: none; background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), transparent); }
+.btn:hover { background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), color-mix(in srgb, var(--ink) 10%, transparent)); color: var(--ink); }
+.btn.down, .btn.down:hover { background: var(--ink); color: var(--paper); }
+
+#keys { grid-area: keys; position: relative; height: clamp(120px, 14vw, 180px); touch-action: none; }
+.key { --led: 0; position: absolute; top: 0; cursor: pointer; border: var(--line) solid var(--black-key-edge); }
+.key.white { bottom: 0; margin-right: calc(var(--line) * -1); background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), var(--key)); }
+.key.black { height: 58%; z-index: 1; background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), #1c1c1c); }
+.key.down { background: var(--signal); }
+
+/* one line: the type shrinks with the column (down to 11px), and only below that does it wrap */
+section { container-type: inline-size; }
+.hints { margin: 18px 0 0; color: var(--mute); font-size: clamp(11px, calc(100cqw / 55), 13px); line-height: 1.7; white-space: nowrap; }
+@container (max-width: 570px) { .hints { white-space: normal; } }
+kbd { font: inherit; color: var(--ink); border: 1px solid var(--mute); padding: 0 5px; }

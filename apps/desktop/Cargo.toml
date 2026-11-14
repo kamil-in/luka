@@ -1,0 +1,16 @@
+[package]
+name = "fma-desktop"
+description = "The desktop client: a Tauri window and the sound card, as a fma-display Transport"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+fma-display = { path = "../../crates/fma-display" }
+fma-fetch = { path = "../../crates/fma-fetch" }
+tauri = { version = "2", features = [] }
+cpal = "0.15"

@@ -1,0 +1,17 @@
+{
+  "about": "Firmwares whose authors publish a browser build of their own source, and where each is in its repository. Chosen by hand: the build for the FM-1 (not the SMK-37's), the latest where there are several, and not the helper modules beside it (speech, converters, editors). tools/fetch-native.mjs downloads them.",
+  "builds": [
+    { "id": "fmini-1", "name": "FMini-1", "repo": "ruppert/fmini-1", "branch": "HEAD", "path": "docs/emu/felucca.wasm" },
+    { "id": "melodee", "name": "Melodee", "repo": "keremimo/melodee", "branch": "gh-pages", "path": "emu/melodee.wasm" },
+    { "id": "skiff", "name": "Skiff", "repo": "illuminus5/skiff", "branch": "gh-pages", "path": "try/felucca.wasm" },
+    { "id": "amb-1", "name": "AMB-1", "repo": "charlesvestal/fm1-amb", "branch": "gh-pages", "path": "emu/app.wasm" },
+    { "id": "obervave", "name": "OberVave", "repo": "zvenson/obervave", "branch": "HEAD", "path": "docs/sim/obervave.wasm" },
+    { "id": "grimm", "name": "GR!MM", "repo": "GRiMMBIENT/grimm", "branch": "gh-pages", "path": "grimm.wasm" },
+    { "id": "x0x", "name": "X0X", "repo": "charlesvestal/fm1-x0x", "branch": "gh-pages", "path": "emu/x0x.wasm" },
+    { "id": "niagara-drift", "name": "Niagara Drift", "repo": "evanyerburgh/niagara-drift", "branch": "gh-pages", "path": "omni.wasm" },
+    { "id": "monk-1", "name": "MONK-1", "repo": "charlesvestal/fm1-monk", "branch": "gh-pages", "path": "emu/monk.wasm" }
+  ],
+  "without": [
+    { "repo": "hugelton/Felucca", "why": "publishes no browser build" }
+  ]
+}
