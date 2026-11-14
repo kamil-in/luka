@@ -41,24 +41,53 @@ h1, h2, h3 { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grays
 @supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin; scrollbar-color: var(--ink) transparent; } }
 
 /* ---------------------------------------------------------------- the bar */
-header { display: flex; align-items: baseline; gap: 24px; padding: 14px 24px; background: var(--ink); color: var(--paper); }
+:root { --bar: 54px; }
+header { display: flex; align-items: center; gap: 18px; height: var(--bar); padding: 0 24px; background: var(--ink); color: var(--paper); }
 h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.03em; white-space: nowrap; }
-#theme { flex: none; align-self: center; padding: 4px 12px; color: var(--paper); border-color: var(--paper); }
-#theme:hover { background: var(--paper); color: var(--ink); }
+#theme { flex: none; padding: 4px 12px; color: var(--paper); border-color: var(--paper); }
+#theme:hover, #menu:hover { background: var(--paper); color: var(--ink); }
 #status { flex: 1; text-align: right; text-transform: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .75; }
-#status.bad { opacity: 1; color: var(--signal); white-space: normal; }
+#status.bad { opacity: 1; color: var(--signal); }
+/* the menu button: three lines */
+#menu { flex: none; width: 36px; height: 30px; padding: 0; display: grid; place-items: center; color: var(--paper); border-color: var(--paper); }
+#menu span { display: block; width: 16px; height: var(--line); background: currentColor; box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor; }
+body.menu #menu { background: var(--paper); color: var(--ink); }
 
-/* ---------------------------------------------------------------- the page */
-main { flex: 1; min-height: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 48px; padding: 32px 24px 40px; max-width: 1500px; width: 100%; }
-/* wide: the page is the window's height, and the firmware list alone scrolls (the panel stays where it is) */
-@media (min-width: 1081px) {
-  body { height: 100vh; }
-  aside { display: flex; flex-direction: column; min-height: 0; }
-  #lists { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 14px; margin-right: -14px; }
-  section { min-height: 0; overflow-y: auto; }
+/* ---------------------------------------------------------------- the firmware list: a drawer under the bar */
+#drawer {
+  position: fixed; z-index: 10; left: 0; top: var(--bar); bottom: 0; width: min(400px, 100vw); padding: 24px 24px 0;
+  display: flex; flex-direction: column; background: var(--paper); border-right: var(--line) solid var(--ink);
+  transform: translateX(-100%); visibility: hidden; transition: transform .15s ease-out, visibility 0s .15s;
 }
-@media (max-width: 1080px) { main { grid-template-columns: 1fr; gap: 40px; } #lists { max-height: 60vh; overflow-y: auto; } }
-h2 { margin: 0 0 6px; min-height: .95em; font-size: clamp(40px, 5vw, 64px); font-weight: 600; line-height: .95; letter-spacing: -0.045em; }
+body.menu #drawer { transform: none; visibility: visible; transition: transform .15s ease-out; }
+@media (prefers-reduced-motion: reduce) { #drawer, body.menu #drawer { transition: none; } }
+#lists { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 14px; margin-right: -14px; }
+#scrim { position: fixed; z-index: 9; inset: var(--bar) 0 0 0; display: none; background: rgb(0 0 0 / .4); }
+body.menu #scrim { display: block; }
+
+/* ---------------------------------------------------------------- the page: the screens, then the one panel */
+main { flex: 1; display: flex; flex-direction: column; gap: 18px; width: 100%; max-width: 1240px; margin: 0 auto; padding: 22px 24px 28px; }
+
+/* (four across, and no taller than leaves the panel in sight) */
+#screens { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; width: min(100%, max(640px, calc((100vh - 470px) * 4))); margin: 0 auto; }
+@media (max-width: 760px) { #screens { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; } }
+.slot { margin: 0; padding: 8px; border: var(--line) solid var(--ink); cursor: pointer; }
+.slot.selected { border-color: var(--signal); box-shadow: 0 0 0 var(--line) var(--signal); }
+.slot .bar { display: flex; align-items: baseline; gap: 10px; min-height: 22px; margin-bottom: 8px; }
+.slot .num { font-feature-settings: "tnum"; }
+.slot .num::after { content: "."; }
+.slot.selected .num { color: var(--signal); }
+.slot .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot.empty .name { color: var(--mute); }
+.slot .bar button { font-size: 13px; }
+.slot .bar button[hidden] { display: none; }
+.slot.muted .mute, .slot.paused .run { color: var(--signal); }
+.slot .glass { position: relative; }
+.slot canvas { display: block; width: 100%; height: auto; aspect-ratio: 1; image-rendering: pixelated; background: #000; border: 6px solid var(--screen-edge); outline: var(--line) solid var(--screen-out); outline-offset: calc(var(--line) * -1); }
+.slot.paused canvas { opacity: .45; }
+.slot .choose { position: absolute; inset: 0; margin: auto; width: fit-content; height: fit-content; padding: 4px 12px; font-size: 13px; color: #f0eee9; border-color: #f0eee9; }
+.slot .choose:hover { background: #f0eee9; color: #1c1c1c; }
+.slot:not(.empty) .choose { display: none; }
 
 /* ---------------------------------------------------------------- controls */
 button { font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink); background: none; border: var(--line) solid var(--ink); border-radius: 0; padding: 8px 14px; cursor: pointer; }
@@ -66,6 +95,10 @@ button:hover { background: var(--ink); color: var(--paper); }
 button.solid { background: var(--ink); color: var(--paper); }
 button.solid:hover { background: var(--signal); border-color: var(--signal); color: #1c1c1c; }
 button.compact { padding: 4px 12px; }
+button:disabled { opacity: .3; pointer-events: none; }
+/* a link that is a button (a firmware's source) */
+a.button { display: inline-block; padding: 4px 12px; color: var(--ink); border: var(--line) solid var(--ink); text-decoration: none; }
+a.button:hover { background: var(--ink); color: var(--paper); }
 .list li.playing button.solid { background: var(--signal); border-color: var(--signal); color: #1c1c1c; }
 .list li.playing button.solid:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 button.text { border: 0; padding: 0; }
@@ -84,7 +117,7 @@ button.text:hover { background: none; color: var(--signal); }
 #search:focus { outline: 0; border-bottom-color: var(--signal); box-shadow: 0 var(--line) 0 var(--signal); }
 
 .list { list-style: none; margin: 20px 0 0; padding: 0; counter-reset: fw; }
-.list li { counter-increment: fw; display: grid; grid-template-columns: 2.2em 1fr; padding: 12px 0; border-top: var(--line) solid var(--ink); }
+.list li { counter-increment: fw; display: grid; grid-template-columns: 2.2em minmax(0, 1fr) auto; align-items: center; gap: 0 10px; padding: 10px 0; border-top: var(--line) solid var(--ink); }
 .list li:last-child { border-bottom: var(--line) solid var(--ink); }
 .list li::before { content: counter(fw) "."; font-feature-settings: "tnum"; }
 .list li.empty { display: block; color: var(--mute); }
@@ -93,49 +126,39 @@ button.text:hover { background: none; color: var(--signal); }
 .list li.unplayable { color: var(--mute); }
 .list .name { font-size: 19px; overflow-wrap: anywhere; }
 .list .meta { color: var(--mute); font-size: 13px; overflow-wrap: anywhere; text-transform: none; }
-.list a.meta { display: inline-block; text-decoration: none; }
-.list a.meta:hover { color: var(--signal); text-decoration: underline; text-underline-offset: 3px; }
-.list .row { display: flex; gap: 14px; margin-top: 8px; }
+.list .row { display: flex; align-items: center; gap: 8px; }
 
 h3 { margin: 0; font-size: 30px; font-weight: 600; line-height: 1; letter-spacing: -0.04em; }
 
 /* ---------------------------------------------------------------- the device */
-#device {
-  margin-top: 18px; padding: 28px; border: var(--line) solid var(--ink);
-  display: grid; grid-template-columns: minmax(150px, 1fr) auto minmax(300px, 1.6fr); grid-template-areas: "left screen right" "keys keys keys"; gap: 28px 32px; align-items: start;
-}
-@container (max-width: 880px) { #device { grid-template-columns: 1fr; grid-template-areas: "screen" "left" "right" "keys"; justify-items: stretch; } #screen { justify-self: center; } }
-#left { grid-area: left; display: grid; gap: 24px; }
-#right { grid-area: right; display: grid; gap: 24px; }
-#screen { grid-area: screen; width: min(300px, 70vw); aspect-ratio: 1; height: auto; image-rendering: pixelated; background: #000; border: 10px solid var(--screen-edge); outline: var(--line) solid var(--screen-out); }
+/* One panel for all the screens: small knobs and buttons, the labels at their usual size. */
+#device { padding: 18px 20px 20px; border: var(--line) solid var(--ink); display: grid; gap: 16px; }
+/* (the chosen screen is empty, or its firmware stopped: nothing here does anything) */
+#device.locked > * { opacity: .3; pointer-events: none; }
 
-.knobs { display: grid; gap: 18px 12px; justify-items: center; }
-.knobs.two { grid-template-columns: repeat(2, 1fr); }
-.knobs.four { grid-template-columns: repeat(4, 1fr); }
-.knob { --turn: 0deg; width: 100%; max-width: 76px; text-align: center; cursor: ns-resize; touch-action: none; }
+.knobs { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 12px 8px; }
+@media (max-width: 620px) { .knobs { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.knob { --turn: 0deg; display: flex; flex-direction: column; align-items: center; cursor: ns-resize; touch-action: none; }
 .knob::before {
-  content: ""; display: block; aspect-ratio: 1; border: var(--line) solid var(--ink); border-radius: 50%; transform: rotate(var(--turn));
+  content: ""; display: block; width: 44px; aspect-ratio: 1; border: var(--line) solid var(--ink); border-radius: 50%; transform: rotate(var(--turn));
   background: linear-gradient(var(--ink), var(--ink)) 50% 0 / var(--line) 50% no-repeat;
 }
 .knob:hover::before, .knob.turning::before { background-color: color-mix(in srgb, var(--ink) 8%, transparent); }
 .knob.turning::before { border-color: var(--signal); background-image: linear-gradient(var(--signal), var(--signal)); }
-.knob::after { content: attr(data-label); display: block; margin-top: 8px; font-size: 13px; white-space: nowrap; }
+.knob::after { content: attr(data-label); display: block; margin-top: 6px; font-size: 13px; white-space: nowrap; }
 
-.buttons { display: grid; gap: 8px; }
-.buttons.two { grid-template-columns: repeat(2, 1fr); }
-.buttons.six { grid-template-columns: repeat(6, 1fr); }
-.btn { --led: 0; padding: 14px 0; font-size: 13px; touch-action: none; background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), transparent); }
+.buttons { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 760px) { .buttons { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+.btn { --led: 0; padding: 7px 0; font-size: 13px; touch-action: none; background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), transparent); }
 .btn:hover { background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), color-mix(in srgb, var(--ink) 10%, transparent)); color: var(--ink); }
 .btn.down, .btn.down:hover { background: var(--ink); color: var(--paper); }
 
-#keys { grid-area: keys; position: relative; height: clamp(120px, 14vw, 180px); touch-action: none; }
+#keys { position: relative; height: clamp(84px, 9vw, 116px); touch-action: none; }
 .key { --led: 0; position: absolute; top: 0; cursor: pointer; border: var(--line) solid var(--black-key-edge); }
 .key.white { bottom: 0; margin-right: calc(var(--line) * -1); background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), var(--key)); }
 .key.black { height: 58%; z-index: 1; background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), #1c1c1c); }
 .key.down { background: var(--signal); }
 
-/* one line: the type shrinks with the column (down to 11px), and only below that does it wrap */
-section { container-type: inline-size; }
-.hints { margin: 18px 0 0; color: var(--mute); font-size: clamp(11px, calc(100cqw / 55), 13px); line-height: 1.7; white-space: nowrap; }
-@container (max-width: 570px) { .hints { white-space: normal; } }
+.hints { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.7; }
+#playing-into { color: var(--ink); }
 kbd { font: inherit; color: var(--ink); border: 1px solid var(--mute); padding: 0 5px; }

@@ -178,9 +178,8 @@ Asked for by the owner:
   principle; the blockers are the Python generation steps these builds run first, and
   per-repo build recipes. Suggested test, not run: compile Felucca using FMini-1's
   `web/emu/felucca_web.c` (it has a switch for Felucca's full UI).
-- **Several firmwares at once.** Native builds make it easy (many fit in one audio
-  thread). Emulated ones are limited to one or two; more would need one worker per core
-  with buffered audio.
+- **Several emulated firmwares at once** (browser builds: done, see above). Emulated ones
+  are limited to one or two; more would need one worker per core with buffered audio.
 - **Hosting the web app publicly** needs HTTPS in front of `fma-web-server` (browsers
   require it for the hashing the page uses) and a `GITHUB_TOKEN`, since all visitors share
   the server's GitHub rate limit (60 lookups an hour without one).
@@ -194,6 +193,49 @@ Asked for by the owner:
 - `fma-fetch`'s "no package" error lists every file of the release, which can be long.
 - `THIRD-PARTY.md` carries fm1-emu's MIT notice (its JIT glue is adapted in
   `player-worklet.js`). Keep it if that code stays.
+
+## Several firmwares at once (2026-11-15)
+
+Up to four browser builds play together. Read this before the "UI" section below, which
+describes the page before this change (its list column, big heading and per-row GitHub link
+are gone).
+
+- **Transport** (`ui/web/transport-web.js`): four slots. `start_build`, `start`, `stop`,
+  `input` and the new `mute` carry `slot` (none: 0); `started`, `stopped`, `leds`, `muted`,
+  errors and frames (`onFrame(rgba, slot)`) carry it back. A slot is one worklet node behind
+  one gain node; a slot that stops is freed (`dispose` to the worklet, which then returns
+  false from `process`). Replacing a slot's firmware makes a new node; the transport itself
+  says `stopped` for the old one, so the order of events does not depend on two ports.
+  The same firmware cannot be in two slots (they would store over each other). The emulator
+  stays one at a time. `connect()` returns `slots` (4); a transport without it gets one screen.
+- **Rust protocol**: not changed beyond a doc comment and `Build.autostarts`. The native
+  `Session` plays one firmware and ignores a `slot` sent to it.
+- **Self-starting builds**: `tools/self-start.mjs` runs a build in Node through
+  `native-worklet.js` for 14 s of device time with nothing pressed, and calls it
+  self-starting if there is sound (peak >= 0.004) after second 8. Both import tools write
+  that as `autostarts` in the manifest. Found: Aisling, AMB-1, Nachtfahrt, SATIE-1, ZEN-1.
+  CoralFlower's power-on sound (gone by 5 s) and Mutable Dreams' blip do not count. Pressing
+  PLAY stops Aisling, Nachtfahrt and SATIE-1 within about 4 s and AMB-1 after about 20 s;
+  ZEN-1's quiet drone ignores it. No build exports a way to prevent it, so the page loads
+  them stopped (`paused: true` on `start_build`).
+- **Stopped (paused) is not unloaded** (owner's wording, 2026-11-15: the list says
+  load/unload, a screen says play/stop). `pause` (`{type, slot, paused}` -> `paused` event)
+  makes the worklet skip the firmware: silence, its clock standing still (CoralFlower's WASI
+  clock subtracts the time held), the screen frozen. A firmware loaded stopped has drawn
+  nothing yet, so its screen is black until its play. `stop` in the protocol still means
+  unload (the slot is emptied).
+- **Page** (`ui/app.js`, owner's design): four screens in a row, each with number, name,
+  mute, stop; **one** panel (8 knobs in a row, 14 buttons in a row, keys) that plays the
+  chosen screen (click, or keys 1-4). Changing screen releases what was held; LEDs and the
+  MASTER position are each screen's own. A stopped firmware gets nothing from the panel and
+  the panel is greyed (owner: "disable any activity for that firmware" until it plays); mute
+  is sound only. The list is a drawer behind the menu button; rows are name, load/unload,
+  source. Load fills the chosen screen if empty, else the first empty one.
+- **Checked** in the preview pane: four at once at 5-7 % total load, 1-2 late blocks in
+  ~1400; duplicate and bad-slot errors; mute, stop/play (no frames made while stopped), unload,
+  replace; light and dark; 375 px wide. **The owner played four at once and reported no
+  issues.** The sum of four outputs has no headroom or limiter: measure the
+  peak if the owner reports distortion. The desktop window was not launched after this change.
 
 ## UI (changed 2026-11-14)
 

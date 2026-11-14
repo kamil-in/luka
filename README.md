@@ -1,6 +1,6 @@
 # Luka
 
-An application for playing community firmwares for the **M-VAVE FM-1** pocket synthesizer without the physical hardware. Pick a firmware from the list and it plays with the device's screen, keys, knobs, and sound.
+An application for playing community firmwares for the **M-VAVE FM-1** pocket synthesizer without the physical hardware. Pick a firmware from the list and it plays with the device's screen, keys, knobs, and sound. Up to **four firmwares play at once**, each on a screen of its own.
 
 Luka plays each firmware's **own browser build**: many authors compile their firmware's source to WebAssembly and publish it. Played that way a firmware costs about 1% of a core.
 
@@ -12,9 +12,11 @@ Two clients share a single front-panel UI (`ui/`), which is the same page in bot
 
 ## What it does
 
-* A list of **20 firmwares**, sorted a to z, with a search box (every word must match the name or repository; an **×** clears it, so does Escape).
-* **Play** starts a firmware; the heading shows its name. Its repository is linked under the name (in the desktop app it opens in the system browser).
-* The front panel: 240×240 screen, 27 keys, 14 buttons, 7 knobs, and the LEDs. Keys can be clicked or typed (`a` to `'`, with `w e t y u o p` for the black keys, `z` `x` for the octave).
+* **Four screens**, one for each firmware playing. Each has the firmware's name, **mute** and **stop** / **play**. Stop holds the firmware where it is, still loaded and silent; play lets it go on. Click a screen (or type `1` to `4`) to choose it: it is outlined, and the panel below plays it.
+* **One front panel** for the chosen screen: 27 keys, 14 buttons, 8 knobs, and the LEDs. Keys can be clicked or typed (`a` to `'`, with `w e t y u o p` for the black keys, `z` `x` for the octave). The panel is greyed out while the chosen screen is empty or its firmware is stopped.
+* The **menu button** in the bar opens the list of **20 firmwares**, sorted a to z, with a search box (every word must match the name or repository; an **×** clears it, so does Escape; Escape again closes the list).
+* **Load** puts a firmware on the chosen screen if it is empty, otherwise on the first empty one, and starts it; with all four taken, unload one first. **Unload** takes it off its screen. **Source** opens its repository (in the desktop app, in the system browser). A firmware is on one screen at a time.
+* Firmwares that **play by themselves** from power on (Aisling, AMB-1, Nachtfahrt, SATIE-1, ZEN-1) are loaded **stopped**: press the screen's play to start one. Which ones do is measured when the builds are imported.
 * **Light and dark**: a button in the bar switches them; without a choice it follows the system.
 * What a firmware saves is kept per browser (IndexedDB) or per desktop window.
 
@@ -47,6 +49,7 @@ ui/web/player-worklet.js The emulator in the audio thread
 ui/transport-tauri.js    The first desktop transport (Rust emulator + sound card); not used by the page at present
 tools/build-web.ps1      Builds the wasm emulator (fma-wasm)
 tools/import-builds.mjs  Takes firmwares/dist/*.wasm into .cache/native and writes the list the app shows
+tools/self-start.mjs     Runs a build with nothing pressed, to see whether it plays by itself (used by both import tools)
 tools/fetch-native.mjs   Alternative: downloads the builds from the authors' sites
 tools/native-builds.json Catalog for fetch-native.mjs
 firmwares/               Clones of the firmware repositories, build scripts, dist/ and per-build interface docs
@@ -142,7 +145,7 @@ cargo test -p fma-fetch --test live -- --ignored --nocapture
 
 ## Audio Notes
 
-* **Browser builds** (both clients): run inside the audio worklet, 128 frames per block, `AudioContext` fixed at 44.1 kHz so nothing is resampled. `fma.stats()` in the console shows the audio thread's load.
+* **Browser builds** (both clients): each firmware playing is an audio worklet node of its own behind its own gain (the mute), all in the one audio thread; 128 frames per block, `AudioContext` fixed at 44.1 kHz so nothing is resampled. Their outputs are added as they are, with no limiter. `fma.stats()` in the console shows the audio thread's load, in total and per screen (`fma.stats(0)` to `fma.stats(3)` for one).
 * **Emulator, web**: the default clock is 120 MHz with automatic step-down (240, 160, 120, 100, 80, 60) when blocks run late; `?mhz=N`, `?latency=N` and `?native=0` are switches for experiments.
 * **Emulator, desktop (Rust)**: `Session` paces with `try_recv` and short sleeps, and the sound output corrects drift from a smoothed buffer level. `FMA_AUDIO_LOG=1` prints buffer statistics once a second. Do not change these without measuring.
 

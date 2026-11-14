@@ -37,8 +37,12 @@
 // when it is played, and it stays under its author's licence.
 //
 //   page -> here   {type: "start", id, sha256: save key, wasm: ArrayBuffer, save, style}
-//                  {type: "stop"} | {type: "input", input} | {type: "stats"}
+//                  {type: "stop"} | {type: "input", input} | {type: "stats"} | {type: "dispose"}
+//                  {type: "pause", paused}: the firmware is held where it is (no sound, its
+//                  time standing still) until it is let go; `start` may carry `paused` too
 //   here -> page   as player-worklet.js
+//
+// One processor plays one firmware; the page makes one for each firmware playing at once.
 
 const clock = globalThis.performance ? () => globalThis.performance.now() : () => Date.now();
 
@@ -213,7 +217,7 @@ class Native extends AudioWorkletProcessor {
         if (asy) Object.assign(imports.env ??= {}, { web_yield: () => this.yieldNow(), web_ticks: () => (clock() * 24000) >>> 0 });
         // (CoralFlower reads the WASI clock and counts what it prints: a clock that stays at zero stops it)
         if (cf) Object.assign(imports.wasi_snapshot_preview1 ??= {}, {
-          clock_time_get: (_id, _prec, out) => { new DataView(this.x.memory.buffer).setBigUint64(out, BigInt(Math.round(currentTime * 1e9)), true); return 0; },
+          clock_time_get: (_id, _prec, out) => { new DataView(this.x.memory.buffer).setBigUint64(out, BigInt(Math.round((currentTime - this.idle) * 1e9)), true); return 0; }, // (the time it was held does not count)
           fd_write: (_fd, iov, n, out) => {
             const dv = new DataView(this.x.memory.buffer);
             let len = 0;
@@ -222,6 +226,8 @@ class Native extends AudioWorkletProcessor {
             return 0;
           },
         });
+        this.idle = 0;      // seconds spent held (paused), and since when it is
+        this.paused = false;
         const x = new WebAssembly.Instance(module, imports).exports;
         this.x = x;
         this.sim = sim;
@@ -268,18 +274,28 @@ class Native extends AudioWorkletProcessor {
         this.drawn = -1;
         this.leds = "";
         this.writes = this.saved = this.wrote();
+        this.hold(!!data.paused);
         const rateOf = this.pick("web_sample_rate", "sim_rate"), rate = rateOf ? rateOf() : 44100;
         const info = { identity: "browser build", board: "fm1", sample_rate: rate, screen_width: 240, screen_height: 240 };
         this.port.postMessage({ type: "started", id: data.id, info, save_restored: restored, mhz: 0, fixed: true });
         break;
       }
       case "stop": this.stop(true); break;
+      case "dispose": this.stop(true); this.gone = true; break; // (the page is done with this node)
+      case "pause": if (this.x) this.hold(!!data.paused); break;
       case "input": this.input(data.input); break;
       case "stats":
         this.port.postMessage({ type: "stats", stats: { ...this.stats, load: Math.round(100 * this.stats.busyMs / (1000 * this.stats.blocks * 128 / sampleRate || 1)) } });
         this.stats = this.fresh();
         break;
     }
+  }
+
+  /// Held: the firmware is not run (silence, and its clock stands still) until let go.
+  hold(paused) {
+    if (paused === this.paused) return;
+    if (paused) this.heldAt = currentTime; else this.idle += currentTime - this.heldAt;
+    this.paused = paused;
   }
 
   input(i) {
@@ -362,9 +378,10 @@ class Native extends AudioWorkletProcessor {
   }
 
   process(_inputs, outputs) {
+    if (this.gone) return false; // (lets the browser drop this processor)
     const [left, right] = outputs[0], x = this.x;
     this.stats.blocks++;
-    if (!x) return true;
+    if (!x || this.paused) return true;
     try {
       if (this.queue.length && this.now() - this.nextOk >= 0) {
         this.queue.shift()();

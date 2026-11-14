@@ -5,6 +5,12 @@
 //! {"type": "start", "id": "owner/repo@v1.0#thing.fwsc"}
 //! {"type": "input", "input": {"type": "key", "id": 21, "down": true, "velocity": 100}}
 //! ```
+//!
+//! The web client (`ui/web/transport-web.js`) plays several firmwares at once, each in a
+//! slot: there `start`, `start_build`, `stop` and `input` may carry a `slot` (0..=3; none: 0),
+//! `started`, `stopped`, `leds` and errors carry it back, and there is a `mute` command
+//! (`{"type": "mute", "slot": 1, "muted": true}`, answered by a `muted` event). A session
+//! here plays one firmware: it has no `slot` (one sent to it is ignored) and no `mute`.
 
 pub use fma_fetch::{Asset, Firmware, Release};
 pub use fma_player::{Board, Info, Input, Options};
@@ -64,6 +70,10 @@ pub struct Build {
     pub size: u64,
     /// This client knows how to drive it (`false`: it is only listed).
     pub playable: bool,
+    /// It makes sound by itself from power on (a generative firmware): a client playing
+    /// several at once starts it muted.
+    #[serde(default)]
+    pub autostarts: bool,
 }
 
 /// What a client is told.

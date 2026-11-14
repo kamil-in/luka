@@ -13,6 +13,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { identify } from "../ui/web/native-kinds.js";
+import { selfStarts } from "./self-start.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const out = join(root, ".cache", "native");
@@ -37,7 +38,7 @@ for (const b of builds) {
     writeFileSync(join(out, `${b.id}.wasm`), bytes);
     manifest.push({
       id: b.id, name: b.name, repo: b.repo, branch: b.branch, path: b.path, commit, source: url,
-      file: `${b.id}.wasm`, family, size: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex"), style, exports, imports,
+      file: `${b.id}.wasm`, family, size: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex"), style, autostarts: await selfStarts(bytes, style), exports, imports,
     });
     console.log(`${b.name.padEnd(14)} ${String(Math.round(bytes.length / 1024)).padStart(5)} KB  ${commit.slice(0, 7)}  ${style || "no adapter yet"}  (${exports.length} exports, ${imports.length} imports)`);
   } catch (e) {

@@ -8,6 +8,9 @@
 //   page -> here   {type: "module", bytes}
 //                  {type: "start", id, sha256, package: ArrayBuffer, save: Uint8Array|null, options}
 //                  {type: "stop"} | {type: "input", input} | {type: "stats"}
+//                  {type: "dispose"}: stop, and run no more (the page drops the node)
+//                  {type: "pause", paused}: the machine is held where it is until let go
+//                  (`start` may carry `paused` too)
 //   here -> page   {type: "started", id, info, save_restored} | {type: "failed", message}
 //                  {type: "events", events} | {type: "frame", rgba} | {type: "save", sha256, bytes}
 //                  {type: "stats", stats}
@@ -134,11 +137,14 @@ class Player extends AudioWorkletProcessor {
         const said = JSON.parse(this.text());
         if (!ok) return this.port.postMessage({ type: "failed", message: said });
         this.sha256 = data.sha256;
+        this.paused = !!data.paused;
         this.running = true;
         this.port.postMessage({ type: "started", id: data.id, info: said.info, save_restored: said.save_restored, mhz: options.clock_mhz || 240, fixed: !!data.fixed });
         break;
       }
       case "stop": this.stop(true); break;
+      case "dispose": this.stop(true); this.gone = true; break; // (the page is done with this node)
+      case "pause": this.paused = !!data.paused; break;
       case "input": {
         if (!this.running) break;
         const [ptr, len] = this.put(ascii(JSON.stringify(data.input)));
@@ -189,8 +195,9 @@ class Player extends AudioWorkletProcessor {
   }
 
   process(_inputs, outputs) {
+    if (this.gone) return false; // (lets the browser drop this processor)
     const [left, right] = outputs[0];
-    if (this.running) {
+    if (this.running && !this.paused) {
       try {
         this.tick(left.length);
       } catch (e) {
@@ -204,7 +211,7 @@ class Player extends AudioWorkletProcessor {
       this.stats.low = Math.min(this.stats.low, this.have);
       if (!this.playing && this.have >= this.target) { this.playing = true; this.pos = 0; this.level = this.target; }
       if (!this.playing || this.have < 2) {
-        if (this.running) { this.stats.silent++; if (this.playing) this.stats.dry++; }
+        if (this.running && !this.paused) { this.stats.silent++; if (this.playing) this.stats.dry++; }
         this.playing = false;
         left[i] = 0;
         if (right) right[i] = 0;

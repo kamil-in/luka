@@ -13,70 +13,61 @@
 </head>
 <body>
   <header>
+    <button id="menu" type="button" aria-label="Firmwares" aria-expanded="false" aria-controls="drawer"><span></span></button>
     <h1>luka</h1>
     <div id="status" role="status">Starting…</div>
     <button id="theme" type="button" aria-label="Switch between light and dark">dark</button>
   </header>
 
+  <!-- the firmware list, behind the menu button -->
+  <div id="scrim"></div>
+  <aside id="drawer" aria-label="Firmwares" inert>
+    <h3>firmwares</h3>
+    <div id="find">
+      <input id="search" type="search" placeholder="search" spellcheck="false" autocomplete="off" aria-label="Search the firmwares">
+      <button id="clear" type="button" aria-label="Clear the search" hidden>×</button>
+    </div>
+    <div id="lists">
+      <ol id="builds" class="list"></ol>
+    </div>
+  </aside>
+
   <main>
-    <aside>
-      <h3>firmwares</h3>
-      <div id="find">
-        <input id="search" type="search" placeholder="search" spellcheck="false" autocomplete="off" aria-label="Search the firmwares">
-        <button id="clear" type="button" aria-label="Clear the search" hidden>×</button>
+    <!-- a screen for each firmware playing (app.js fills it); the panel below plays the chosen one -->
+    <div id="screens"></div>
+
+    <div id="device" aria-label="FM-1">
+      <div class="knobs">
+        <div class="knob" data-pot="4" data-label="master"></div>
+        <div class="knob" data-enc="0" data-label="select"></div>
+        <div class="knob" data-enc="6" data-label="presets"></div>
+        <div class="knob" data-enc="1" data-label="algorithm"></div>
+        <div class="knob" data-enc="2" data-label="knob 1"></div>
+        <div class="knob" data-enc="3" data-label="knob 2"></div>
+        <div class="knob" data-enc="4" data-label="knob 3"></div>
+        <div class="knob" data-enc="5" data-label="knob 4"></div>
       </div>
-      <div id="lists">
-        <ol id="builds" class="list"></ol>
+      <div class="buttons">
+        <button class="btn" data-key="0">oct−</button>
+        <button class="btn" data-key="1">oct+</button>
+        <button class="btn" data-key="2">fx</button>
+        <button class="btn" data-key="3">scl</button>
+        <button class="btn" data-key="4">env</button>
+        <button class="btn" data-key="5">lfo</button>
+        <button class="btn" data-key="6">edit</button>
+        <button class="btn" data-key="7">glo</button>
+        <button class="btn" data-key="8">home</button>
+        <button class="btn" data-key="9">save</button>
+        <button class="btn" data-key="10">arp</button>
+        <button class="btn" data-key="11">seq</button>
+        <button class="btn" data-key="12">play</button>
+        <button class="btn" data-key="13">rec</button>
       </div>
-    </aside>
-
-    <section>
-      <h2 id="now"></h2>
-      <div id="device" aria-label="FM-1">
-        <div id="left">
-          <div class="knobs two">
-            <div class="knob" data-pot="4" data-label="master"></div>
-            <div class="knob" data-enc="0" data-label="select"></div>
-            <div class="knob" data-enc="6" data-label="presets"></div>
-            <div class="knob" data-enc="1" data-label="algorithm"></div>
-          </div>
-          <div class="buttons two">
-            <button class="btn" data-key="0">oct−</button>
-            <button class="btn" data-key="1">oct+</button>
-          </div>
-        </div>
-
-        <canvas id="screen" width="240" height="240"></canvas>
-
-        <div id="right">
-          <div class="knobs four">
-            <div class="knob" data-enc="2" data-label="knob 1"></div>
-            <div class="knob" data-enc="3" data-label="knob 2"></div>
-            <div class="knob" data-enc="4" data-label="knob 3"></div>
-            <div class="knob" data-enc="5" data-label="knob 4"></div>
-          </div>
-          <div class="buttons six">
-            <button class="btn" data-key="2">fx</button>
-            <button class="btn" data-key="3">scl</button>
-            <button class="btn" data-key="4">env</button>
-            <button class="btn" data-key="5">lfo</button>
-            <button class="btn" data-key="6">edit</button>
-            <button class="btn" data-key="7">glo</button>
-            <button class="btn" data-key="8">home</button>
-            <button class="btn" data-key="9">save</button>
-            <button class="btn" data-key="10">arp</button>
-            <button class="btn" data-key="11">seq</button>
-            <button class="btn" data-key="12">play</button>
-            <button class="btn" data-key="13">rec</button>
-          </div>
-        </div>
-
-        <div id="keys"></div>
-      </div>
-      <p class="hints">
-        knobs: scroll or drag. notes: click a key (lower is louder) or type <kbd>a</kbd>–<kbd>'</kbd>, black keys <kbd>w</kbd> <kbd>e</kbd> <kbd>t</kbd> <kbd>y</kbd> <kbd>u</kbd> <kbd>o</kbd> <kbd>p</kbd>, octave <kbd>z</kbd> <kbd>x</kbd>.
-      </p>
-    </section>
+      <div id="keys"></div>
+    </div>
+    <p class="hints">
+      <span id="playing-into"></span> screens: click one or type <kbd>1</kbd>–<kbd>4</kbd>. knobs: scroll or drag. notes: click a key (lower is louder) or type <kbd>a</kbd>–<kbd>'</kbd>, black keys <kbd>w</kbd> <kbd>e</kbd> <kbd>t</kbd> <kbd>y</kbd> <kbd>u</kbd> <kbd>o</kbd> <kbd>p</kbd>, octave <kbd>z</kbd> <kbd>x</kbd>.
+    </p>
   </main>
 
   <script type="module" src="app.js"></script>
