@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/fma-fetch", "crates/fma-player", "crates/fma-display", "crates/fma-wasm", "apps/desktop", "apps/web-server", "spike"]
+members = ["crates/fma-fetch", "crates/fma-player", "crates/fma-display", "crates/fma-wasm", "apps/desktop", "apps/web-server"]
 
 [workspace.package]
 version = "0.1.0"

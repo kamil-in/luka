@@ -40,7 +40,6 @@ tools/fetch-native.mjs         downloads firmwares' own browser builds
 tools/import-builds.mjs        takes firmwares/dist/*.wasm into .cache/native + manifest (what the page lists)
 firmwares/                     owner's clones of the firmware repos + build scripts + dist/ + per-build docs
 tools/native-builds.json       which file in which repo, chosen by hand
-spike/                         throwaway from day one; safe to delete
 ```
 
 Dependencies only go downward in that list. `ui/app.js` talks to a transport and nothing
@@ -90,8 +89,7 @@ Web app data: the browser's IndexedDB database `fma`, plus `localStorage["fma.cl
 | web app, native browser builds | 6 of 10 play | started each, screenshots, load meter; **nobody has listened** |
 | redesigned UI (light and dark) | done | screenshots in both schemes |
 
-Nothing is under version control: there is no git repository yet. The owner was offered
-"delete `spike/`, `git init`, first commit" and has not answered.
+The project is under git (branch `master`). `spike/` was deleted.
 
 ## Audio: the hard-won part
 

@@ -53,7 +53,6 @@ tools/self-start.mjs     Runs a build with nothing pressed, to see whether it pl
 tools/fetch-native.mjs   Alternative: downloads the builds from the authors' sites
 tools/native-builds.json Catalog for fetch-native.mjs
 firmwares/               Clones of the firmware repositories, build scripts, dist/ and per-build interface docs
-spike/                   Throwaway experiments; safe to delete
 ```
 
 ---
