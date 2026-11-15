@@ -47,6 +47,7 @@ ui/web/native-worklet.js A firmware's own browser build, in the audio thread (al
 ui/web/native-kinds.js   Which family a build is, from its exports
 ui/web/player-worklet.js The emulator in the audio thread
 ui/transport-tauri.js    The first desktop transport (Rust emulator + sound card); not used by the page at present
+ui/midi/                 MIDI controllers (own module; profiles per device, user-made ones as data): see ui/midi/README.md
 tools/build-web.ps1      Builds the wasm emulator (fma-wasm)
 tools/import-builds.mjs  Takes firmwares/dist/*.wasm into .cache/native and writes the list the app shows
 tools/self-start.mjs     Runs a build with nothing pressed, to see whether it plays by itself (used by both import tools)

@@ -45,7 +45,20 @@ h1, h2, h3 { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grays
 header { display: flex; align-items: center; gap: 18px; height: var(--bar); padding: 0 24px; background: var(--ink); color: var(--paper); }
 h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.03em; white-space: nowrap; }
 #theme { flex: none; padding: 4px 12px; color: var(--paper); border-color: var(--paper); }
-#theme:hover, #menu:hover { background: var(--paper); color: var(--ink); }
+#theme:hover, #menu:hover, #midi:hover { background: var(--paper); color: var(--ink); }
+/* the MIDI button: dim until MIDI is on, outlined while looking for a controller, solid when one is connected */
+#midi { flex: none; padding: 4px 12px; color: var(--paper); border-color: var(--paper); }
+#midi[data-state="off"] { opacity: .55; }
+#midi[data-state="on"] { background: var(--paper); color: var(--ink); }
+#midi-pop { position: fixed; z-index: 30; top: calc(var(--bar) + 8px); right: 24px; width: min(360px, calc(100vw - 32px)); padding: 14px 16px; background: var(--paper); color: var(--ink); border: var(--line) solid var(--ink); }
+#midi-pop[hidden] { display: none; }
+#midi-pop h3 { margin: 0 0 6px; }
+#midi-pop p { margin: 0 0 10px; text-transform: none; }
+#midi-pop .controls { max-height: calc(100vh - var(--bar) - 190px); overflow-y: auto; }
+#midi-pop .row { display: grid; grid-template-columns: 116px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: var(--line) solid var(--ink); }
+#midi-pop .what { text-transform: none; color: var(--mute); overflow-wrap: anywhere; }
+#midi-pop .foot { display: flex; gap: 8px; padding: 0 0 8px; }
+#midi-pop .last { margin: 6px 0 0; font-size: 12px; color: var(--mute); overflow-wrap: anywhere; }
 #status { flex: 1; text-align: right; text-transform: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .75; }
 #status.bad { opacity: 1; color: var(--signal); }
 /* the menu button: three lines */
@@ -127,6 +140,9 @@ button.text:hover { background: none; color: var(--signal); }
 .list .name { font-size: 19px; overflow-wrap: anywhere; }
 .list .meta { color: var(--mute); font-size: 13px; overflow-wrap: anywhere; text-transform: none; }
 .list .row { display: flex; align-items: center; gap: 8px; }
+/* the row a MIDI controller is on: a bar in the signal colour at its left */
+.list li.cursor { box-shadow: inset 4px 0 0 var(--signal); padding-left: 14px; margin-left: -14px; }
+.list li.cursor::before { color: var(--signal); }
 
 h3 { margin: 0; font-size: 30px; font-weight: 600; line-height: 1; letter-spacing: -0.04em; }
 
