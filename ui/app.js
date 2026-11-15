@@ -3,7 +3,6 @@
 // transport and nothing else: the desktop app's (transport-tauri.js) or a browser's
 // (web/transport-web.js), whichever is here.
 
-import * as tauri from "./transport-tauri.js";
 import * as web from "./web/transport-web.js";
 
 const $ = (id) => document.getElementById(id);
@@ -334,9 +333,20 @@ addEventListener("keyup", (e) => typed(e, false));
 // ------------------------------------------------------------------ start
 
 drawBuilds();
+
+// A page built for a static host (tools/build-pages.mjs) names a service worker, which keeps the
+// firmwares' wasm files in the browser between visits. Never in the desktop window.
+const worker = document.querySelector('meta[name="luka-sw"]')?.content;
+if (worker && "serviceWorker" in navigator && !globalThis.__TAURI__) navigator.serviceWorker.register(worker).catch(() => { /* no caching, then */ });
+
 // The web transport everywhere it can run, the desktop window included (which is a web view); the
-// Tauri one (the Rust emulator and sound card) is for a window whose page cannot.
-const transport = web.available() ? web : tauri.available() ? tauri : null;
+// Tauri one (the Rust emulator and sound card) is for a window whose page cannot, and is loaded
+// only then (a static host does not carry it).
+let transport = web.available() ? web : null;
+if (!transport) {
+  const tauri = await import("./transport-tauri.js").catch(() => null);
+  if (tauri?.available()) transport = tauri;
+}
 if (transport) {
   try {
     const connected = await transport.connect({ onEvent, onFrame });

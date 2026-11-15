@@ -8,6 +8,7 @@
 
 # Project cache & temporary artifacts
 /.cache/
+/_site/
 
 # Cloned external firmware repositories (cloned on-demand by build-firmwares.ps1)
 /firmwares/*/

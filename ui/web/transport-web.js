@@ -94,7 +94,7 @@ let fetched;
 const builds = () => fetched ??= (async () => {
   try {
     if (tauriCore()) return JSON.parse(await tauriCore().invoke("native_manifest")).builds || [];
-    const response = await fetch("/native/manifest.json");
+    const response = await fetch(new URL("../native/manifest.json", import.meta.url));
     return response.ok ? (await response.json()).builds || [] : [];
   } catch { return []; }
 })();
@@ -104,7 +104,10 @@ async function buildFile(build) {
     try { return await tauriCore().invoke("native_file", { file: build.file }); }
     catch (e) { throw new Error(`${build.name}'s browser build could not be loaded (${e})`); }
   }
-  const response = await fetch(`/native/${build.file}`);
+  // (the hash in the address is what lets the service worker keep the file for good)
+  const url = new URL(`../native/${build.file}`, import.meta.url);
+  if (build.sha256) url.searchParams.set("v", build.sha256.slice(0, 16));
+  const response = await fetch(url);
   if (!response.ok) throw new Error(`${build.name}'s browser build could not be loaded (the server answered ${response.status})`);
   return response.arrayBuffer();
 }
@@ -267,7 +270,7 @@ export async function connect({ onEvent, onFrame }) {
     try {
       const [file, name] = kind === "native" ? ["./native-worklet.js", "fma-native"] : ["./player-worklet.js", "fma-player"];
       const [bytes] = await Promise.all([
-        kind === "native" ? null : fetch("/fma_wasm.wasm").then((r) => { if (!r.ok) throw new Error("the player could not be loaded"); return r.arrayBuffer(); }),
+        kind === "native" ? null : fetch(new URL("../fma_wasm.wasm", import.meta.url)).then((r) => { if (!r.ok) throw new Error("the player could not be loaded"); return r.arrayBuffer(); }),
         modules[kind] ??= context.audioWorklet.addModule(new URL(file, import.meta.url)),
       ]);
       if (slots[slot] !== entry) return null;

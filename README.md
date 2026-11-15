@@ -98,6 +98,18 @@ The emulator's wasm (`tools\build-web.ps1`) is only needed for emulating package
 
 *Data*: the browser's `IndexedDB` database `fma`, plus `localStorage` (`luka.theme`, `fma.clock`).
 
+#### Static Site / GitHub Pages
+
+The web application is fully client-side and can be hosted statically (e.g. GitHub Pages):
+
+```powershell
+node tools/build-pages.mjs                  # builds static site to _site/
+```
+
+The bundle is trimmed for a static host: no emulator wasm and no desktop transport, a compact list, hints that start the page's load chain at once, and a service worker (`tools/pages-sw.js`) that keeps each firmware's wasm in the browser (the file's address carries its hash), since Pages fixes its own caching at 10 minutes. The page and list are fetched network first, with the kept copy when offline.
+
+When pushed to GitHub on branch `master`, `.github/workflows/deploy-pages.yml` automatically builds and publishes the web application to GitHub Pages.
+
 ### Desktop App (Tauri)
 
 ```powershell
