@@ -4,6 +4,7 @@
 // (web/transport-web.js), whichever is here.
 
 import * as web from "./web/transport-web.js";
+import { connectMidi } from "./midi-controller.js";
 
 const $ = (id) => document.getElementById(id);
 const status = (text, bad = false) => {
@@ -172,6 +173,10 @@ function onEvent(e) {
 // ------------------------------------------------------------------ the firmware list
 
 function menu(open) {
+  if (open !== document.body.classList.contains("menu")) { // (opening or closing: the cursor starts again)
+    cursorOn = false;
+    if (open) startCursor();
+  }
   document.body.classList.toggle("menu", open);
   $("drawer").inert = !open;
   $("menu").setAttribute("aria-expanded", String(open));
@@ -198,9 +203,46 @@ function target() {
 }
 
 /// The firmwares' own browser builds on offer, the ones the search box's text is in.
+let shownBuilds = []; // the rows the list shows now (the search box's matches)
+let cursor = 0;        // the row a MIDI controller is on, among those
+let cursorOn = false;  // shown only once a controller has used the list
+
+/// A firmware's list button: unload it if it is on a screen, else load it where the next one goes.
+/// False (and why, in the status line) when it could not be.
+function toggleBuild(b) {
+  const id = `build:${b.id}`, at = slots.findIndex((s) => (s.firmware ? s.firmware.id : s.loading) === id);
+  if (at >= 0) { send({ type: "stop", slot: at }); return true; }
+  if (!b.playable) { status(`${b.name} is not supported yet`, true); return false; }
+  const to = target();
+  if (to < 0) { status("All the screens are taken: unload one first.", true); return false; }
+  const s = slots[to];
+  s.loading = id;
+  select(to);
+  drawSlot(s);
+  drawBuilds();
+  // (one that plays by itself is loaded stopped: it is not sprung on what already plays)
+  send({ type: "start_build", id: b.id, slot: to, paused: b.autostarts });
+  return true;
+}
+
+/// Marks the cursor's row (and brings it into view when asked).
+function markCursor(reveal = false) {
+  const rows = [...$("builds").children];
+  rows.forEach((li, i) => li.classList.toggle("cursor", cursorOn && i === cursor && !li.classList.contains("empty")));
+  if (reveal && cursorOn) rows[cursor]?.scrollIntoView({ block: "nearest" });
+}
+
+/// On the chosen screen's firmware, else the first row.
+function startCursor() {
+  const id = cur()?.firmware?.id;
+  const i = shownBuilds.findIndex((b) => `build:${b.id}` === id);
+  cursor = i >= 0 ? i : 0;
+}
+
 function drawBuilds() {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const shown = builds.filter((b) => words.every((w) => `${b.name} ${b.repo}`.toLowerCase().includes(w)));
+  const words = query.toLowerCase().split(/s+/).filter(Boolean);
+  const shown = shownBuilds = builds.filter((b) => words.every((w) => `${b.name} ${b.repo}`.toLowerCase().includes(w)));
+  cursor = Math.max(0, Math.min(cursor, shown.length - 1));
   if (!shown.length) {
     $("builds").replaceChildren(el("li", { className: "empty", textContent: builds.length ? "no firmware matches." : "nothing here yet." }));
     return;
@@ -208,27 +250,20 @@ function drawBuilds() {
   const to = target();
   $("builds").replaceChildren(...shown.map((b) => {
     const id = `build:${b.id}`, at = slots.findIndex((s) => (s.firmware ? s.firmware.id : s.loading) === id), on = at >= 0;
-    const play = () => {
-      const s = slots[to];
-      s.loading = id;
-      select(to);
-      drawSlot(s);
-      drawBuilds();
-      // (one that plays by itself is loaded stopped: it is not sprung on what already plays)
-      send({ type: "start_build", id: b.id, slot: to, paused: b.autostarts });
-    };
     return el("li", { className: on ? "playing" : b.playable ? "" : "unplayable" },
       el("div", { className: "name", textContent: b.name }),
       el("div", { className: "row" },
         b.playable
-          ? el("button", { className: "solid compact", type: "button", textContent: on ? "unload" : "load", disabled: !on && to < 0, onclick: on ? () => send({ type: "stop", slot: at }) : play })
+          ? el("button", { className: "solid compact", type: "button", textContent: on ? "unload" : "load", disabled: !on && to < 0, onclick: () => toggleBuild(b) })
           : el("span", { className: "meta", textContent: "not supported yet" }),
         el("a", { className: "button compact", href: `https://github.com/${b.repo}`, target: "_blank", rel: "noopener", title: b.repo, textContent: "source" })));
   }));
+  markCursor();
 }
 
 function search(text) {
   query = text;
+  cursor = 0;
   $("search").value = text;
   $("clear").hidden = !text; // the X shows once there is something to clear
   drawBuilds();
@@ -293,7 +328,9 @@ function setPot(v) {
   document.querySelector("[data-pot]").style.setProperty("--turn", `${-135 + 270 * s.pot / 1023}deg`);
   input({ type: "analog", channel: 4, value: s.pot });
 }
-for (const knob of document.querySelectorAll(".knob")) {
+const knobs = [...document.querySelectorAll(".knob")];
+const turns = []; // each knob's turn(clicks), in the panel's order (for a MIDI controller's knobs)
+for (const knob of knobs) {
   let angle = 0, dragY = null, carry = 0;
   const turn = (clicks) => {
     if (!clicks || !live(cur())) return;
@@ -302,6 +339,7 @@ for (const knob of document.querySelectorAll(".knob")) {
     knob.style.setProperty("--turn", `${angle}deg`);
     input({ type: "encoder", id: Number(knob.dataset.enc), clicks });
   };
+  turns.push(turn);
   knob.addEventListener("wheel", (e) => { e.preventDefault(); turn(e.deltaY < 0 ? 1 : -1); }, { passive: false });
   knob.addEventListener("pointerdown", (e) => { knob.setPointerCapture(e.pointerId); dragY = e.clientY; carry = 0; knob.classList.add("turning"); });
   knob.addEventListener("pointermove", (e) => {
@@ -361,3 +399,55 @@ if (transport) {
 } else {
   status("This browser cannot run the player (it needs workers, storage and audio worklets).", true);
 }
+
+// ------------------------------------------------------------------ MIDI controller
+
+/// The next (or previous) screen that has a firmware on it, round the screens; none: stays.
+function step(direction) {
+  for (let i = 1; i <= slots.length; i++) {
+    const n = (selected + direction * i + slots.length * i) % slots.length;
+    if (slots[n].firmware) return select(n);
+  }
+}
+
+/// The Firm button of a controller: the list is closed, it opens (the cursor shown); open, it loads
+/// the cursor's firmware (or unloads it, if it is on a screen) and closes the list. If that could
+/// not be done (no screen free), the list stays, and the status line says why.
+function firm() {
+  if (!document.body.classList.contains("menu")) { menu(true); cursorOn = true; markCursor(true); return; }
+  const b = shownBuilds[cursor];
+  if (b && toggleBuild(b)) menu(false);
+}
+
+connectMidi({
+  button: $("midi"),
+  host: {
+    labels: knobs.map((k) => k.dataset.label), // (what a controller's knobs can be learned as: the panel's, in order)
+    notes: { offset: -39, range: [14, 40] },   // the keys are F3 (id 14) to G5 (id 40): MIDI note 53 is F3
+    // a note played on a controller: the key goes down (if the firmware takes it) or up, as if clicked
+    key({ id, down, velocity }) {
+      const elm = keys.get(id) || document.querySelector(`[data-key="${id}"]`);
+      if (elm && (!down || live(cur()))) press(elm, id, down, velocity);
+    },
+    act(name) {
+      if (name === "nav-left") step(-1);
+      else if (name === "nav-right") step(1);
+      else if (name === "play") { const s = cur(); if (s?.firmware) s.stop.click(); } // the chosen screen's play / stop
+      else if (name === "firm") firm();
+    },
+    // the knob that moves along the firmware list (only while it is open)
+    list({ delta }) {
+      if (!document.body.classList.contains("menu") || !delta || !shownBuilds.length) return;
+      cursorOn = true;
+      cursor = Math.max(0, Math.min(shownBuilds.length - 1, cursor + delta));
+      markCursor(true);
+    },
+    // knob i of the panel turned by a controller's knob: as if by hand
+    knob(i, { delta, value }) {
+      if (!knobs[i]) return;
+      if (knobs[i].dataset.pot && value !== undefined) setPot(Math.round(value / 127 * 1023)); // (the master: a position says where)
+      else turns[i](delta);
+    },
+    status,
+  },
+});
