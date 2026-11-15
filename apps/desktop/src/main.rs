@@ -107,7 +107,28 @@ fn open_link(url: String) -> Result<(), String> {
     open.arg(&url).spawn().map(|_| ()).map_err(|e| e.to_string())
 }
 
+/// The identifier before the rename (see `tauri.conf.json` for the current one).
+const OLD_IDENTIFIER: &str = "dev.fm1adapter.desktop";
+const NEW_IDENTIFIER: &str = "dev.luka.desktop";
+
+/// Moves the data folders of the old identifier to the new one, once, before the window (and so
+/// its web view storage) exists. A folder is moved only if the new one is not there yet; a failure
+/// leaves the old data where it was and the app starts with a clean folder.
+fn migrate_old_data() {
+    for var in ["APPDATA", "LOCALAPPDATA"] {
+        let Some(base) = std::env::var_os(var).map(std::path::PathBuf::from) else { continue };
+        let (old, new) = (base.join(OLD_IDENTIFIER), base.join(NEW_IDENTIFIER));
+        if old.is_dir() && !new.exists() {
+            if let Err(e) = std::fs::rename(&old, &new) {
+                eprintln!("could not move {} to {}: {e}", old.display(), new.display());
+            }
+        }
+    }
+}
+
 fn main() {
+    #[cfg(target_os = "windows")]
+    migrate_old_data();
     tauri::Builder::default()
         .setup(|app| {
             let root = app.path().app_data_dir()?;

@@ -981,14 +981,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fma-spike"
-version = "0.1.0"
-dependencies = [
- "fm1-core",
- "fm1-soc",
-]
-
-[[package]]
 name = "fma-wasm"
 version = "0.1.0"
 dependencies = [

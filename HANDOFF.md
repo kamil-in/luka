@@ -74,7 +74,7 @@ cargo test -p fma-fetch --test live -- --ignored --nocapture      # hits GitHub
 ("failed to remove file ... fma-web-server.exe"), an old `fma-web-server` process is still
 running: stop it first.
 
-Desktop app data: `%APPDATA%\dev.fm1adapter.desktop` (library, packages, saves).
+Desktop app data: `%APPDATA%\dev.luka.desktop` (library, packages, saves).
 Web app data: the browser's IndexedDB database `fma`, plus `localStorage["fma.clock"]`.
 
 ## What works, and how it was checked
@@ -250,7 +250,7 @@ light/dark (`localStorage["luka.theme"]`; none chosen: the system's). Heading fo
 on h1-h3 only (it has an effect on macOS; Windows ignores it). Scrollbars are flat, square, no
 arrows, in the ink colour (so light in the dark theme). The keyboard hint is one line (its
 type shrinks with the column to a floor, then it wraps). The desktop window and product name are
-"Luka" too; the data folder keeps the identifier `dev.fm1adapter.desktop`.
+"Luka" too; the identifier is `dev.luka.desktop` (renamed 2026-11-15 from `dev.fm1adapter.desktop`; `main.rs` moves the old data folders, in %APPDATA% and %LOCALAPPDATA%, on first start).
 
 **The desktop app now shows and does the same as the web app (2026-11-14).** Its window runs the
 web transport (`app.js` prefers `web/transport-web.js` wherever it can run, the web view

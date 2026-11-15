@@ -106,7 +106,7 @@ cargo run --release -p fma-desktop
 
 It reads the builds from `.cache/native` (found from the working directory or the program's folder; `FMA_NATIVE` points elsewhere), so run the import first. Sound goes through the window's Web Audio.
 
-*Data*: `%APPDATA%\dev.fm1adapter.desktop` (the window's storage and, for the emulator path, packages and saves).
+*Data*: `%APPDATA%\dev.luka.desktop` (the window's storage and, for the emulator path, packages and saves).
 
 If a build fails with "failed to remove file ... .exe", an old copy of the program is still running: stop it first.
 
