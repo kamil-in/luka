@@ -45,7 +45,13 @@ h1, h2, h3 { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grays
 header { display: flex; align-items: center; gap: 18px; height: var(--bar); padding: 0 24px; background: var(--ink); color: var(--paper); }
 h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.03em; white-space: nowrap; }
 #theme { flex: none; padding: 4px 12px; color: var(--paper); border-color: var(--paper); }
-#theme:hover, #menu:hover, #midi:hover { background: var(--paper); color: var(--ink); }
+#theme:hover, #menu:hover, #midi:hover, #source:hover { background: var(--paper); color: var(--ink); }
+#source { flex: none; color: var(--paper); border-color: var(--paper); }
+/* a phone: the bar's buttons sit closer, so the status line keeps some room */
+@media (max-width: 520px) {
+  header { gap: 8px; padding: 0 12px; }
+  #midi, #theme, #source { padding: 4px 8px; }
+}
 /* the MIDI button: dim until MIDI is on, outlined while looking for a controller, solid when one is connected */
 #midi { flex: none; padding: 4px 12px; color: var(--paper); border-color: var(--paper); }
 #midi[data-state="off"] { opacity: .55; }

@@ -1,168 +1,241 @@
+<p align="center">
+  <img src="docs/banner.png" alt="Luka: four firmwares playing at once on screens above one front panel with knobs, buttons and keys" width="100%">
+</p>
+
 # Luka
 
-An application for playing community firmwares for the **M-VAVE FM-1** pocket synthesizer without the physical hardware. Pick a firmware from the list and it plays with the device's screen, keys, knobs, and sound. Up to **four firmwares play at once**, each on a screen of its own.
+**Play community firmwares for the M-VAVE FM-1 pocket synth, right in your browser, no hardware needed.**
 
-Luka plays each firmware's **own browser build**: many authors compile their firmware's source to WebAssembly and publish it. Played that way a firmware costs about 1% of a core.
+Pick a firmware, and it plays with the device's real screen, keys, knobs and sound. Load up to **four at once**,
+each on a screen of its own, and jam: a drone under a drum machine under a lead, all running together.
 
-Two clients share a single front-panel UI (`ui/`), which is the same page in both:
-1. **Web App**: served by a small local server, runs in the browser.
-2. **Desktop App**: a Tauri window around the same page, which reads the builds from disk.
+### [▶ Open Luka: kamil-in.github.io/luka](https://kamil-in.github.io/luka/)
 
----
+No install, no account, nothing to download first. Best in **Chrome or Edge** on a computer. Works with a
+**MIDI keyboard or controller** too, if you have one.
 
-## What it does
+<p align="center">
+  <b><a href="#start-jamming-in-a-minute">Start jamming</a></b> &nbsp;·&nbsp;
+  <a href="#playing">Playing</a> &nbsp;·&nbsp;
+  <a href="#what-to-play">What to play</a> &nbsp;·&nbsp;
+  <a href="#using-a-midi-keyboard-or-controller">MIDI controllers</a> &nbsp;·&nbsp;
+  <a href="#troubleshooting">Troubleshooting</a> &nbsp;·&nbsp;
+  <a href="#credits">Credits</a> &nbsp;·&nbsp;
+  <a href="#building-it-yourself">Build it yourself</a>
+</p>
 
-* **Four screens**, one for each firmware playing. Each has the firmware's name, **mute** and **stop** / **play**. Stop holds the firmware where it is, still loaded and silent; play lets it go on. Click a screen (or type `1` to `4`) to choose it: it is outlined, and the panel below plays it.
-* **One front panel** for the chosen screen: 27 keys, 14 buttons, 8 knobs, and the LEDs. Keys can be clicked or typed (`a` to `'`, with `w e t y u o p` for the black keys, `z` `x` for the octave). The panel is greyed out while the chosen screen is empty or its firmware is stopped.
-* The **menu button** in the bar opens the list of **20 firmwares**, sorted a to z, with a search box (every word must match the name or repository; an **×** clears it, so does Escape; Escape again closes the list).
-* **Load** puts a firmware on the chosen screen if it is empty, otherwise on the first empty one, and starts it; with all four taken, unload one first. **Unload** takes it off its screen. **Source** opens its repository (in the desktop app, in the system browser). A firmware is on one screen at a time.
-* Firmwares that **play by themselves** from power on (Aisling, AMB-1, Nachtfahrt, SATIE-1, ZEN-1) are loaded **stopped**: press the screen's play to start one. Which ones do is measured when the builds are imported.
-* **Light and dark**: a button in the bar switches them; without a choice it follows the system.
-* What a firmware saves is kept per browser (IndexedDB) or per desktop window.
-
----
-
-## Architecture & Principles
-
-* **Independent of External Hubs**: no firmware hub services or IDs.
-* **Modular Separation**: fetching (`fma-fetch`), playing (`fma-player`) and display/protocol (`fma-display`) are separate crates. The UI talks only to a transport (`Command` and `Event` messages), so a new client is a new transport file.
-* **Browser builds**: `ui/web/native-worklet.js` adapts each build's exported functions to one set of messages. `ui/web/native-kinds.js` works out from a build's exports which family it is (used both at import time and when a build starts).
-* **Emulator kept**: `.fwsc` packages can still be emulated (`fm1-emu` core, in Rust natively and in WebAssembly for the browser). The current page does not offer them; the code and tests remain.
-* **Audio-First Performance**: browser builds and the emulator run inside an `AudioWorklet` at 44.1 kHz, one tick per 128-frame block, so there is no timer jitter.
+<sub>Sections marked with ▸ open and close when you click them.</sub>
 
 ---
 
-## Repository Layout
+## Start jamming in a minute
 
-```
-crates/fma-fetch         Link resolution, GitHub release downloading, package caching
-crates/fma-player        Emulator trait, panel ids, fm1-emu wrapper
-crates/fma-display       Command/Event protocol, Transport trait, player pacing, native Session
-crates/fma-wasm          The emulator compiled to wasm for the browser
-apps/desktop             Desktop client (Tauri); Rust commands that read the builds from disk and open links
-apps/web-server          Static server + GitHub proxy + the builds at /native/
-ui/                      The front panel: index.html, style.css, app.js (plain HTML/CSS/JS, no bundler)
-ui/web/transport-web.js  The transport both clients use: list, storage, routing to a player
-ui/web/native-worklet.js A firmware's own browser build, in the audio thread (all families)
-ui/web/native-kinds.js   Which family a build is, from its exports
-ui/web/player-worklet.js The emulator in the audio thread
-ui/transport-tauri.js    The first desktop transport (Rust emulator + sound card); not used by the page at present
-ui/midi/                 MIDI controllers (own module; profiles per device, user-made ones as data): see ui/midi/README.md
-tools/build-web.ps1      Builds the wasm emulator (fma-wasm)
-tools/import-builds.mjs  Takes firmwares/dist/*.wasm into .cache/native and writes the list the app shows
-tools/self-start.mjs     Runs a build with nothing pressed, to see whether it plays by itself (used by both import tools)
-tools/fetch-native.mjs   Alternative: downloads the builds from the authors' sites
-tools/native-builds.json Catalog for fetch-native.mjs
-firmwares/               Clones of the firmware repositories, build scripts, dist/ and per-build interface docs
-```
+1. **Open** [kamil-in.github.io/luka](https://kamil-in.github.io/luka/).
+2. Click the **menu button** (three lines, top left) to open the list of firmwares. There are 20.
+3. Press **load** next to one. It fills the first free screen and starts.
+   Some firmwares **play by themselves** the moment they start (the ambient and generative ones); Luka loads those
+   **stopped** so they do not surprise you. Press **play** on their screen when you want them.
+4. **Play it**: click the keys on screen, or type on your computer keyboard (see below). Turn a knob by scrolling the mouse
+   wheel over it, or by dragging it up and down.
+5. **Add more**: open the list again and load another firmware onto the next screen. Everything keeps playing.
+
+If you hear nothing: browsers only start sound after you click or press something on the page, so click once
+and try again. Then check the screen's **mute** isn't on, its firmware isn't **stopped**, and the **master** knob (the
+first one, the firmware's volume) isn't at zero.
 
 ---
 
-## Prerequisites
+## Playing
 
-* **Operating System**: Windows (PowerShell)
-* **Rust**: stable, with the wasm target:
-  ```powershell
-  rustup target add wasm32-unknown-unknown
-  ```
-* **Node.js**: 20+ (24 recommended), for the tools only
-* **Git** on `PATH`
+<details>
+<summary><b>Four screens, one front panel</b></summary>
 
----
+* Each screen shows one firmware's display. Its bar has the firmware's name, **mute** (silences it, keeps it running)
+  and **stop / play** (holds it exactly where it is, silent; play lets it carry on).
+* The **front panel** below belongs to the **chosen screen**, the one outlined in orange. Click a screen, or press
+  <kbd>1</kbd> to <kbd>4</kbd>, to choose another. Whatever you were holding is let go, and the others keep playing.
+* The panel is greyed out while the chosen screen is empty or its firmware is stopped.
 
-## Getting the firmwares
+</details>
 
-The app lists whatever is in `.cache/native/` (git-ignored). To fill it:
+<details>
+<summary><b>The panel</b></summary>
 
-```powershell
-# 1. Clone/update the firmware repositories and collect their browser builds into firmwares/dist/
-#    (also double-clickable: firmwares\build-all.cmd)
-.\firmwares\build-firmwares.ps1
+* **Keys**: 27 of them. Click one (the lower on the key, the harder you hit it), or type on your keyboard:
+  <kbd>a</kbd> <kbd>s</kbd> <kbd>d</kbd> <kbd>f</kbd> <kbd>g</kbd> <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> <kbd>;</kbd> <kbd>'</kbd>
+  are the white keys from C4, and <kbd>w</kbd> <kbd>e</kbd> <kbd>t</kbd> <kbd>y</kbd> <kbd>u</kbd> <kbd>o</kbd> <kbd>p</kbd>
+  are the black keys above them. <kbd>z</kbd> and <kbd>x</kbd> move the octave down and up.
+* **Knobs**: 8 of them. The first (**master**) is the firmware's volume; the rest do whatever the firmware
+  gives them (the labels are the real FM-1's: select, presets, algorithm, knob 1 to 4).
+* **Buttons**: 14, with the real device's labels (`oct-`, `oct+`, `fx`, `scl`, `env`, `lfo`, `edit`, `glo`, `home`,
+  `save`, `arp`, `seq`, `play`, `rec`). Each firmware uses them in its own way, so read its page (the **source**
+  button beside it in the list opens it) to learn what they do.
+* **Saving**: what a firmware saves is kept in your browser, so it is still there next time you load it.
 
-# 2. Copy them into .cache/native and write the list the app shows
-node tools\import-builds.mjs
-```
+</details>
 
-Step 1 also writes the interface specifications to [`firmwares/INTERFACES.md`](firmwares/INTERFACES.md) and [`firmwares/docs/`](firmwares/docs/). `node tools\fetch-native.mjs` is an alternative to both steps for the builds listed in `tools/native-builds.json` (it downloads them from the authors' sites). The import merges with what is already in the cache.
+<details>
+<summary><b>The firmware list</b></summary>
 
----
+* **Search** by name or repository (which includes the author's handle); every word you type has to match. The **×** clears it (so does <kbd>Esc</kbd>;
+  <kbd>Esc</kbd> again closes the list).
+* **load** puts a firmware on the chosen screen if that is empty, otherwise on the first empty one.
+  With all four screens taken, **unload** one first. **unload** takes a firmware off its screen.
+* A firmware lives on one screen at a time.
+* The first time you load a firmware it is downloaded (the biggest is about a megabyte); your browser remembers the ones
+  you have used, so they load instantly next time.
+* The **light / dark** button in the bar switches the look; without a choice it follows your system.
 
-## Running the Application
-
-### Web App
-
-```powershell
-cargo run --release -p fma-web-server        # http://127.0.0.1:8787  (PORT or --port to change)
-```
-
-The emulator's wasm (`tools\build-web.ps1`) is only needed for emulating packages. Open `http://127.0.0.1:8787`.
-
-*Data*: the browser's `IndexedDB` database `fma`, plus `localStorage` (`luka.theme`, `fma.clock`).
-
-#### Static Site / GitHub Pages
-
-The web application is fully client-side and can be hosted statically (e.g. GitHub Pages):
-
-```powershell
-node tools/build-pages.mjs                  # builds static site to _site/
-```
-
-The bundle is trimmed for a static host: no emulator wasm and no desktop transport, a compact list, hints that start the page's load chain at once, and a service worker (`tools/pages-sw.js`) that keeps each firmware's wasm in the browser (the file's address carries its hash), since Pages fixes its own caching at 10 minutes. The page and list are fetched network first, with the kept copy when offline.
-
-When pushed to GitHub on branch `master`, `.github/workflows/deploy-pages.yml` automatically builds and publishes the web application to GitHub Pages.
-
-### Desktop App (Tauri)
-
-```powershell
-cargo run --release -p fma-desktop
-```
-
-It reads the builds from `.cache/native` (found from the working directory or the program's folder; `FMA_NATIVE` points elsewhere), so run the import first. Sound goes through the window's Web Audio.
-
-*Data*: `%APPDATA%\dev.luka.desktop` (the window's storage and, for the emulator path, packages and saves).
-
-If a build fails with "failed to remove file ... .exe", an old copy of the program is still running: stop it first.
+</details>
 
 ---
 
-## Supported Firmware Families
+## What to play
 
-All 20 listed firmwares play. A build's family decides which adapter code path handles it:
+Twenty firmwares from the FM-1 community, each with its own character. A few ideas to start (each description is a
+summary of what that project says about itself; follow the link in [Credits](#credits) for the real thing):
 
-| Family | Firmwares | Notes |
-|---|---|---|
-| `felucca` | FMini-1, Skiff | masks by printed label, 1 MiB flash image |
-| `x0x` | AMB-1, X0X, Niagara Drift, MONK-1, Loom, Mutable Dreams, FRASIL, ZEN-1, FiMba-1, Aisling, SATIE-1, Nachtfahrt | `web_fb` + `web_blits`, named storage objects |
-| `melodee` | Melodee | this panel's own ids, no storage |
-| `sim` | OberVave, S1Vave | `sim_*` names, state as blobs |
-| `asyncify` | GR!MM, Arctic Scream | main loop run as a coroutine by the worklet |
-| `coralflower` | CoralFlower | felucca-like, real WASI clock, 1 MiB flash staged before boot |
+| If you want... | Try |
+|---|---|
+| **Ambient beds and drones** | AMB-1, Niagara Drift, FRASIL (frozen drones with shimmer reverb), Aisling (dream-harp soundscapes), SATIE-1 (Satie-inspired generative piano), GR!MM, Arctic Scream |
+| **Beats and bass** | X0X (a 303 bass synth with 808 and 909 drum machines), FMini-1 (a 4-track groovebox), Melodee (909 drums, a sequencer) |
+| **A lead to play over it** | MONK-1 (a velocity-sensitive monophonic synth that talks), FiMba-1 (an electric kalimba), ZEN-1 (koto, shakuhachi, erhu, with microtones), S1Vave and OberVave (analogue-modelling synths) |
+| **Something to wander through** | Nachtfahrt (a Berlin-school night drive), Loom (a generative pattern weaver), Mutable Dreams (over 50 oscillator models), CoralFlower (a live arpeggiator), Skiff (a modular patch environment) |
 
-Felucca itself publishes no browser build and SLOOP is a sound engine without a panel: neither is listed. A browser build is whatever its author last published, and builds keep their authors' licences (mostly GPL-3.0).
+<details>
+<summary><b>Jam recipes</b></summary>
 
----
+* **Drone and lead.** Screen 1: Niagara Drift or AMB-1 (press **play**). Screen 2: MONK-1 or FiMba-1. Choose screen 2 and play over
+  the drone; lower the drone with its **master** knob or **mute** it between sections.
+* **A little band.** Screen 1: X0X for the beat. Screen 2: a bass or lead. Screen 3: a pad or drone. Screen 4: whatever
+  surprises you. Switch between them with <kbd>1</kbd> to <kbd>4</kbd> while they all play.
+* **Stop to build tension.** **stop** a screen to drop it out exactly where it is, then **play** to bring it back in on
+  the same spot.
+* **Layer on the same notes.** The panel plays only the chosen screen, but you can play a line on one, switch, and play
+  another over the top while the first carries on (the generative firmwares keep going by themselves).
 
-## Running Tests
-
-Release mode is needed for the emulator tests (they also need `.cache/firmware/felucca-1.8.2.fwsc`):
-
-```powershell
-cargo test --release -p fma-fetch -p fma-player -p fma-display -p fma-desktop -p fma-web-server
-
-# Live GitHub resolution tests (network)
-cargo test -p fma-fetch --test live -- --ignored --nocapture
-```
+</details>
 
 ---
 
-## Audio Notes
+## Using a MIDI keyboard or controller
 
-* **Browser builds** (both clients): each firmware playing is an audio worklet node of its own behind its own gain (the mute), all in the one audio thread; 128 frames per block, `AudioContext` fixed at 44.1 kHz so nothing is resampled. Their outputs are added as they are, with no limiter. `fma.stats()` in the console shows the audio thread's load, in total and per screen (`fma.stats(0)` to `fma.stats(3)` for one).
-* **Emulator, web**: the default clock is 120 MHz with automatic step-down (240, 160, 120, 100, 80, 60) when blocks run late; `?mhz=N`, `?latency=N` and `?native=0` are switches for experiments.
-* **Emulator, desktop (Rust)**: `Session` paces with `try_recv` and short sleeps, and the sound output corrects drift from a smoothed buffer level. `FMA_AUDIO_LOG=1` prints buffer statistics once a second. Do not change these without measuring.
+Luka works with any MIDI controller: it **learns** yours instead of expecting a particular make.
+
+1. **Plug it in** (before or after opening Luka) and use **Chrome or Edge**. Allow MIDI when the browser asks.
+2. The **midi** button in the bar goes solid when a controller is connected.
+3. **Play the keys.** Notes play the panel's keys straight away, with nothing to set up. A note outside the panel's range is
+   moved by whole octaves until it fits (so it is still the same note), so a small keyboard plays whatever octave it is on.
+4. **Teach it the other controls.** Click **midi**, then **learn** beside a control and press that button or turn that knob on
+   your controller. It is learned the moment Luka hears it. **learn all** walks through them in order.
+
+<details>
+<summary><b>What each learnable control does</b></summary>
+
+| Control | What it does |
+|---|---|
+| **navigation left / right** | Choose the previous / next screen that has a firmware |
+| **master, select, presets, algorithm, knob 1 to 4** | The panel's 8 knobs |
+| **play** | Play / stop the chosen screen |
+| **Firm** | Opens the firmware list. With the list open, loads the highlighted firmware (or unloads it, if it is on a screen) and closes the list |
+| **list knob** | Moves the highlight up and down the list while it is open |
+
+A knob can be a position knob (a pot) or an endless one (an encoder); Luka works out which from how you turn it, so turn it
+a good way clockwise when you learn it. What it learns is kept in your browser. **reset** forgets it all, and the panel also
+shows the last message your controller sent, which helps if something does not respond.
+
+</details>
 
 ---
+
+## Troubleshooting
+
+<details>
+<summary><b>Common problems and what to try</b></summary>
+
+| Problem | Try |
+|---|---|
+| No sound | Click the page once (browsers wait for that), check **mute**, that the firmware is not **stopped**, and the **master** knob |
+| The panel is greyed out | The chosen screen is empty or its firmware is stopped: load one, or press **play** |
+| Crackling with several firmwares | Close other heavy tabs; each firmware is light (about 1% of a core), but audio is sensitive |
+| The **midi** button stays dim | Use Chrome or Edge, allow MIDI for the site when asked, then reload or replug the controller |
+| A firmware did not start | The status line (top right) says why; try loading it again, or reload the page |
+
+</details>
+
+---
+
+## Credits
+
+Luka is only a player. **Everything you hear was made by other people**, and this project exists thanks to them.
+
+<details>
+<summary><b>The firmwares</b></summary>
+
+Each firmware is the work of its author, published as open source for the **M-VAVE FM-1**. Luka plays the **browser
+build each author published**, unmodified, under that author's own licence. Please visit their projects, star them, read their
+manuals, and support them.
+
+| Firmware | Author | Licence | Project |
+|---|---|---|---|
+| AMB-1 | Charles Vestal | MPL-2.0 | [charlesvestal/fm1-amb](https://github.com/charlesvestal/fm1-amb) |
+| Aisling | Stephen Cummins | GPL-3.0 | [stephencummins/fm1-aisling](https://github.com/stephencummins/fm1-aisling) |
+| Arctic Scream | PolarPatch | GPL-3.0 | [PolarPatch/Arctic-scream-FM-1](https://github.com/PolarPatch/Arctic-scream-FM-1) |
+| CoralFlower | FicusFicusov | GPL-3.0 | [FicusFicusov/CoralFlower](https://github.com/FicusFicusov/CoralFlower) |
+| FiMba-1 | J. Adam Sowers | GPL-3.0 | [jadamsowers/fm1-fimba](https://github.com/jadamsowers/fm1-fimba) |
+| FMini-1 | Leo Kuroshita ([@kurogedelic](https://github.com/kurogedelic)), Hügelton Instruments | GPL-3.0 | [ruppert/fmini-1](https://github.com/ruppert/fmini-1) |
+| FRASIL | Styves Goupil | MPL-2.0 / GPL-3.0 | [styvesgoupil/frasil](https://github.com/styvesgoupil/frasil) |
+| GR!MM | GRiMMBIENT | GPL-3.0 | [GRiMMBIENT/grimm](https://github.com/GRiMMBIENT/grimm) |
+| Loom | Charles Vestal | GPL-3.0 | [charlesvestal/fm1-loom](https://github.com/charlesvestal/fm1-loom) |
+| Melodee | Kerem Kilic ([@keremimo](https://github.com/keremimo)) | GPL-3.0 | [keremimo/melodee](https://github.com/keremimo/melodee) |
+| MONK-1 | Charles Vestal | GPL-3.0 | [charlesvestal/fm1-monk](https://github.com/charlesvestal/fm1-monk) |
+| Mutable Dreams | Henri David (kidbee85) | GPL-3.0 / MPL-2.0 | [kidbee85-beep/mutable-dreams](https://github.com/kidbee85-beep/mutable-dreams) |
+| Nachtfahrt | FartyPants | GPL-3.0 | [FartyPants/fm1-nachtfahrt](https://github.com/FartyPants/fm1-nachtfahrt) |
+| Niagara Drift (OMNI) | Evan Yerburgh | GPL-3.0 | [evanyerburgh/niagara-drift](https://github.com/evanyerburgh/niagara-drift) |
+| OberVave | Zvenson | GPL-3.0 | [zvenson/obervave](https://github.com/zvenson/obervave) |
+| S1Vave | AndrewGG88 | GPL-3.0 | [AndrewGG88/S1Vave](https://github.com/AndrewGG88/S1Vave) |
+| SATIE-1 | OCKM STUDIO | GPL-3.0 | [OCKM-STUDIO/SATIE-1](https://github.com/OCKM-STUDIO/SATIE-1) |
+| Skiff | illuminus5 | GPL-3.0 | [illuminus5/skiff](https://github.com/illuminus5/skiff) |
+| X0X | Charles Vestal | GPL-3.0 | [charlesvestal/fm1-x0x](https://github.com/charlesvestal/fm1-x0x) |
+| ZEN-1 | aceyprime | GPL-3.0 | [aceyprime/zen-1](https://github.com/aceyprime/zen-1) |
+
+Author names and licences are as recorded when the builds were imported; each project's own page is the authority.
+Two more projects are used for development and testing and are not in the list in the app:
+**Felucca** by Hügelton Instruments (GPL-3.0, [hugelton/Felucca](https://github.com/hugelton/Felucca)), the 4-track FM firmware
+that Skiff is based on, and whose packages Luka's emulator was tested against.
+
+</details>
+
+<details>
+<summary><b>The platform and the code underneath</b></summary>
+
+* **M-VAVE FM-1**: the pocket synthesizer all of this is written for, by **M-VAVE**.
+* **[fm1-emu](https://github.com/joakimeriksson/fm1-emu)** by **Joakim Eriksson** (MIT): the FM-1 emulator that Luka's
+  emulator path is built on, including the JIT glue adapted for the browser. Its licence notice is in
+  [THIRD-PARTY.md](THIRD-PARTY.md).
+* **[Tauri](https://tauri.app)** (Apache-2.0 / MIT): the desktop window.
+* **[cpal](https://github.com/RustAudio/cpal)** (Apache-2.0): sound output for the desktop emulator path.
+* **[serde](https://serde.rs)**, **serde_json** (MIT / Apache-2.0), **[sha2](https://github.com/RustCrypto/hashes)**
+  (MIT / Apache-2.0), **[thiserror](https://github.com/dtolnay/thiserror)** (MIT / Apache-2.0),
+  **[ureq](https://github.com/algesten/ureq)** (MIT / Apache-2.0) and **[tiny_http](https://github.com/tiny-http/tiny-http)**
+  (MIT / Apache-2.0): the Rust libraries under the tools and the local server.
+* The open web platform: **WebAssembly**, **Web Audio** (AudioWorklet) and **Web MIDI**.
+
+Luka is an independent project. It is **not affiliated with or endorsed by M-VAVE or any of the firmware authors**.
+If you are an author and want something changed or removed, please open an issue.
+
+</details>
+
+---
+
+## Building it yourself
+
+Everything about how Luka is put together, how to run it from source (web and desktop), how to host it, and
+how to run the tests is in the **[Technical Documentation](Technical%20Documentation.md)**. MIDI controller internals are in
+[`ui/midi/README.md`](ui/midi/README.md).
 
 ## License
 
-GNU General Public License v3.0 (GPL-3.0-only). See [LICENSE](LICENSE). See [THIRD-PARTY.md](THIRD-PARTY.md) for third-party notices (including `joakimeriksson/fm1-emu`, MIT-licensed and GPL-compatible). Community firmware binaries remain under their authors' licences.
+Luka is released under the **GNU General Public License v3.0** (GPL-3.0-only): see [LICENSE](LICENSE), and
+[THIRD-PARTY.md](THIRD-PARTY.md) for third-party notices. The community firmwares remain under their authors' licences,
+listed above.
