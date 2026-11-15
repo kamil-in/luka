@@ -8,7 +8,7 @@ use std::time::Duration;
 
 const API: &str = "https://api.github.com";
 /// A generic client name: GitHub requires one, and it says nothing about the user.
-const USER_AGENT: &str = "fm1-adapter";
+const USER_AGENT: &str = "luka";
 /// No firmware package comes near this (the FM-1's whole flash is 1 MiB).
 const MAX_PACKAGE: u64 = 16 << 20;
 
