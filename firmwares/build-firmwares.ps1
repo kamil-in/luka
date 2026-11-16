@@ -5,7 +5,7 @@
     instructions, and generate comprehensive interface documentation.
 
 .DESCRIPTION
-    Runs across all 21 FM-1 pocket synth community firmwares:
+    Runs across all 25 FM-1 pocket synth community firmwares:
       - fmini-1 (ruppert/fmini-1)
       - melodee (keremimo/melodee)
       - skiff (illuminus5/skiff)
@@ -27,6 +27,10 @@
       - fm1-aisling (stephencummins/fm1-aisling)
       - SATIE-1 (OCKM-STUDIO/SATIE-1)
       - fm1-nachtfahrt (FartyPants/fm1-nachtfahrt)
+      - OG-Synth-source (mikejohnsonbeats/OG-Synth-source)
+      - FM1-Animatek (animatek/FM1-Animatek)
+      - JIANT (juanjiant-bit/JIANT)
+      - Golana (Gadlele/Golana)
 
 .EXAMPLE
     .\build-firmwares.ps1
@@ -47,7 +51,7 @@ $docsDir = Join-Path $firmwaresDir "docs"
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host " FM-1 Community Firmwares - Single-Click Build & Documentation" -ForegroundColor Cyan
 Write-Host " Target Directory: $firmwaresDir" -ForegroundColor Cyan
-Write-Host " Total Firmwares : 21" -ForegroundColor Cyan
+Write-Host " Total Firmwares : 25" -ForegroundColor Cyan
 Write-Host "=================================================================`n" -ForegroundColor Cyan
 
 if ($Clean -and (Test-Path $distDir)) {
@@ -79,7 +83,11 @@ $repos = @(
     @{ Id = "fm1-fimba"; Name = "FiMba-1"; Url = "https://github.com/jadamsowers/fm1-fimba.git"; BuildScript = "web/emu/build.sh" },
     @{ Id = "fm1-aisling"; Name = "Aisling"; Url = "https://github.com/stephencummins/fm1-aisling.git"; BuildScript = "web/emu/build.sh" },
     @{ Id = "SATIE-1"; Name = "SATIE-1"; Url = "https://github.com/OCKM-STUDIO/SATIE-1.git"; BuildScript = "web/emu/build.sh" },
-    @{ Id = "fm1-nachtfahrt"; Name = "Nachtfahrt"; Url = "https://github.com/FartyPants/fm1-nachtfahrt.git"; BuildScript = "web/emu/build.sh" }
+    @{ Id = "fm1-nachtfahrt"; Name = "Nachtfahrt"; Url = "https://github.com/FartyPants/fm1-nachtfahrt.git"; BuildScript = "web/emu/build.sh" },
+    @{ Id = "OG-Synth-source"; Name = "OG Synth"; Url = "https://github.com/mikejohnsonbeats/OG-Synth-source.git"; BuildScript = "" },
+    @{ Id = "FM1-Animatek"; Name = "ATEK 303"; Url = "https://github.com/animatek/FM1-Animatek.git"; BuildScript = "atek303/build.sh" },
+    @{ Id = "JIANT"; Name = "JIANT"; Url = "https://github.com/juanjiant-bit/JIANT.git"; BuildScript = "web/emu/build.sh" },
+    @{ Id = "Golana"; Name = "Golana"; Url = "https://github.com/Gadlele/Golana.git"; BuildScript = "web/emu/build_wasm.sh" }
 )
 
 # Step 1: Clone, checkout main/master, and update
@@ -128,7 +136,7 @@ if ($hasEmcc) {
     foreach ($r in $repos) {
         $repoPath = Join-Path $firmwaresDir $r.Id
         $scriptPath = Join-Path $repoPath $r.BuildScript
-        if (Test-Path $scriptPath) {
+        if ($r.BuildScript -and (Test-Path $scriptPath)) {
             Write-Host "  [BUILD] Running repo build instructions for $($r.Name) ($($r.BuildScript))..." -ForegroundColor Cyan
             try {
                 if ($r.BuildScript.EndsWith(".py")) {
@@ -160,7 +168,7 @@ if (Test-Path $genScript) {
 }
 
 Write-Host "`n=================================================================" -ForegroundColor Cyan
-Write-Host " Finished! All 21 firmwares processed." -ForegroundColor Cyan
+Write-Host " Finished! All 25 firmwares processed." -ForegroundColor Cyan
 Write-Host " WASM Binaries : $distDir" -ForegroundColor Cyan
 Write-Host " Documentation : $docsDir and $firmwaresDir\INTERFACES.md" -ForegroundColor Cyan
 Write-Host " Manifest      : $distDir\manifest.json" -ForegroundColor Cyan

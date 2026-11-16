@@ -27,6 +27,10 @@ This document provides the complete interface documentation for all 21 community
 | **Aisling** | [stephencummins/fm1-aisling](https://github.com/stephencummins/fm1-aisling) | `x0x` | 351.8 KB | 33 | [Aisling Interface](docs/fm1-aisling.md) |
 | **SATIE-1** | [OCKM-STUDIO/SATIE-1](https://github.com/OCKM-STUDIO/SATIE-1) | `x0x` | 467.2 KB | 23 | [SATIE-1 Interface](docs/SATIE-1.md) |
 | **Nachtfahrt** | [FartyPants/fm1-nachtfahrt](https://github.com/FartyPants/fm1-nachtfahrt) | `x0x` | 447.1 KB | 27 | [Nachtfahrt Interface](docs/fm1-nachtfahrt.md) |
+| **OG Synth** | [mikejohnsonbeats/OG-Synth-source](https://github.com/mikejohnsonbeats/OG-Synth-source) | `x0x` | 990.6 KB | 116 | [OG Synth Interface](docs/OG-Synth-source.md) |
+| **ATEK 303** | [animatek/FM1-Animatek](https://github.com/animatek/FM1-Animatek) | `x0x` | 116.6 KB | 35 | [ATEK 303 Interface](docs/FM1-Animatek.md) |
+| **JIANT** | [juanjiant-bit/JIANT](https://github.com/juanjiant-bit/JIANT) | `felucca` | 1195.1 KB | 56 | [JIANT Interface](docs/JIANT.md) |
+| **Golana** | [Gadlele/Golana](https://github.com/Gadlele/Golana) | `felucca` | 501.2 KB | 29 | [Golana Interface](docs/Golana.md) |
 
 ---
 

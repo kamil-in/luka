@@ -140,6 +140,30 @@ const ARTIFACT_MAP = [
     type: 'git',
     ref: 'origin/gh-pages:emu/amb.wasm',
   },
+  {
+    id: 'OG-Synth-source',
+    name: 'OG Synth',
+    type: 'web',
+    url: 'https://ogsynth.cc/emulator/app.wasm',
+  },
+  {
+    id: 'FM1-Animatek',
+    name: 'ATEK 303',
+    type: 'git',
+    ref: 'origin/gh-pages:atek303/play/app.wasm',
+  },
+  {
+    id: 'JIANT',
+    name: 'JIANT',
+    type: 'web',
+    url: 'https://juanjiant-bit.github.io/JIANT/emu/felucca.wasm',
+  },
+  {
+    id: 'Golana',
+    name: 'Golana',
+    type: 'web-html-b64',
+    url: 'https://gadlele.github.io/Golana/try/',
+  },
 ];
 
 async function extractOne(item) {

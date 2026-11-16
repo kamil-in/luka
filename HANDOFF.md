@@ -127,7 +127,7 @@ Source of the builds: `firmwares/build-firmwares.ps1` (owner's script) clones th
 puts each wasm in `firmwares/dist/`; `node tools/import-builds.mjs` copies them into
 `.cache/native/` and writes the manifest, deciding each build's family with
 `ui/web/native-kinds.js`. Felucca's dist entry is FMini-1's file again and is skipped (Felucca
-stays emulated). 20 builds are listed and all play (SLOOP was taken out of the list by the owner):
+stays emulated). 24 builds are listed and all play (OG Synth, ATEK 303, JIANT and Golana were added 2026-11-16 from the authors' published sites, since no wasm compiler is installed here; SLOOP was taken out of the list by the owner):
 
 | Family (style) | Builds | State |
 |---|---|---|
