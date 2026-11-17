@@ -85,28 +85,44 @@ body.menu #drawer { transform: none; visibility: visible; transition: transform 
 body.menu #scrim { display: block; }
 
 /* ---------------------------------------------------------------- the page: the screens, then the one panel */
-main { flex: 1; display: flex; flex-direction: column; gap: 18px; width: 100%; max-width: 1240px; margin: 0 auto; padding: 22px 24px 28px; }
+main { flex: 1; display: flex; flex-direction: column; gap: 18px; width: 100%; max-width: 1600px; margin: 0 auto; padding: 22px 24px 28px; }
 
-/* (four across, and no taller than leaves the panel in sight) */
-#screens { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; width: min(100%, max(640px, calc((100vh - 470px) * 4))); margin: 0 auto; }
-@media (max-width: 760px) { #screens { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; } }
-.slot { margin: 0; padding: 8px; border: var(--line) solid var(--ink); cursor: pointer; }
+/* the stage (the chosen firmware, big) on the left; the slots, knobs and buttons on the right; the keys under both */
+#device { --stage: clamp(260px, min(calc(100vh - 230px), calc(min(100vw, 1600px) - 620px)), 1000px); display: grid; grid-template-columns: var(--stage) 546px; gap: 16px 24px; align-items: stretch; align-self: center; margin-block: auto; }
+#stage { min-width: 0; }
+#stage-name { height: 36px; line-height: 30px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#stage .glass { position: relative; }
+#stage canvas { display: block; width: 100%; height: auto; aspect-ratio: 1; image-rendering: pixelated; background: #000; border: 6px solid var(--screen-edge); outline: var(--line) solid var(--screen-out); outline-offset: calc(var(--line) * -1); }
+#stage.paused canvas { opacity: .45; }
+#stage .choose { position: absolute; inset: 0; margin: auto; width: fit-content; height: fit-content; padding: 4px 12px; font-size: 13px; color: #f0eee9; border-color: #f0eee9; }
+#stage .choose:hover { background: #f0eee9; color: #1c1c1c; }
+#stage:not(.empty) .choose { display: none; }
+#side { min-width: 0; display: grid; grid-template-rows: auto auto auto minmax(90px, 1fr); gap: 20px; padding-top: 36px; }
+/* (the chosen screen is empty, or its firmware stopped: nothing on the panel does anything) */
+#device.locked .knobs, #device.locked .buttons, #device.locked #keys { opacity: .3; pointer-events: none; }
+@media (max-width: 760px) { #device { grid-template-columns: minmax(0, 1fr); } #side { width: 100%; } #stage { width: 100%; } #side { padding-top: 0; } }
+
+#slots { display: grid; grid-template-columns: repeat(4, 130px); justify-content: space-between; }
+.slot { margin: 0; padding: 6px; border: var(--line) solid var(--ink); cursor: pointer; min-width: 0; }
 .slot.selected { border-color: var(--signal); box-shadow: 0 0 0 var(--line) var(--signal); }
-.slot .bar { display: flex; align-items: baseline; gap: 10px; min-height: 22px; margin-bottom: 8px; }
+.slot .glass { position: relative; }
+.slot canvas { display: block; margin: 0 auto; width: 115px; height: 115px; image-rendering: pixelated; background: #000; border: 3px solid var(--screen-edge); outline: var(--line) solid var(--screen-out); outline-offset: calc(var(--line) * -1); }
+.slot.paused canvas { opacity: .45; }
+.slot .choose { position: absolute; inset: 0; margin: auto; width: fit-content; max-width: 90%; height: fit-content; padding: 4px 10px; font-size: 13px; line-height: 1.15; color: #f0eee9; border-color: #f0eee9; }
+.slot .choose:hover { background: #f0eee9; color: #1c1c1c; }
+.slot:not(.empty) .choose { display: none; }
+.slot .bar { display: flex; gap: 6px; margin-top: 6px; font-size: 13px; }
 .slot .num { font-feature-settings: "tnum"; }
 .slot .num::after { content: "."; }
 .slot.selected .num { color: var(--signal); }
-.slot .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot .name[hidden] { display: none; }
 .slot.empty .name { color: var(--mute); }
-.slot .bar button { font-size: 13px; }
-.slot .bar button[hidden] { display: none; }
+.slot .ctl { display: flex; gap: 10px; min-height: 20px; }
+.slot .ctl button { font-size: 12px; }
+.slot .ctl button::before, .slot .ctl button::after { content: none; }
+.slot .ctl button[hidden] { display: none; }
 .slot.muted .mute, .slot.paused .run { color: var(--signal); }
-.slot .glass { position: relative; }
-.slot canvas { display: block; width: 100%; height: auto; aspect-ratio: 1; image-rendering: pixelated; background: #000; border: 6px solid var(--screen-edge); outline: var(--line) solid var(--screen-out); outline-offset: calc(var(--line) * -1); }
-.slot.paused canvas { opacity: .45; }
-.slot .choose { position: absolute; inset: 0; margin: auto; width: fit-content; height: fit-content; padding: 4px 12px; font-size: 13px; color: #f0eee9; border-color: #f0eee9; }
-.slot .choose:hover { background: #f0eee9; color: #1c1c1c; }
-.slot:not(.empty) .choose { display: none; }
 
 /* ---------------------------------------------------------------- controls */
 button { font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink); background: none; border: var(--line) solid var(--ink); border-radius: 0; padding: 8px 14px; cursor: pointer; }
@@ -135,31 +151,22 @@ button.text:hover { background: none; color: var(--signal); }
 #clear:hover { background: none; color: var(--signal); }
 #search:focus { outline: 0; border-bottom-color: var(--signal); box-shadow: 0 var(--line) 0 var(--signal); }
 
-.list { list-style: none; margin: 20px 0 0; padding: 0; counter-reset: fw; }
-.list li { counter-increment: fw; display: grid; grid-template-columns: 2.2em minmax(0, 1fr) auto; align-items: center; gap: 0 10px; padding: 10px 0; border-top: var(--line) solid var(--ink); }
+.list { list-style: none; margin: 20px 0 0; padding: 0; }
+.list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0 10px; padding: 10px 0; border-top: var(--line) solid var(--ink); }
 .list li:last-child { border-bottom: var(--line) solid var(--ink); }
-.list li::before { content: counter(fw) "."; font-feature-settings: "tnum"; }
 .list li.empty { display: block; color: var(--mute); }
-.list li.empty::before { content: none; }
-.list li.playing::before { content: "●"; color: var(--signal); }
 .list li.unplayable { color: var(--mute); }
 .list .name { font-size: 19px; overflow-wrap: anywhere; }
 .list .meta { color: var(--mute); font-size: 13px; overflow-wrap: anywhere; text-transform: none; }
 .list .row { display: flex; align-items: center; gap: 8px; }
-/* the row a MIDI controller is on: a bar in the signal colour at its left */
-.list li.cursor { box-shadow: inset 4px 0 0 var(--signal); padding-left: 14px; margin-left: -14px; }
-.list li.cursor::before { color: var(--signal); }
+/* the row a MIDI controller is on: its name on the signal colour */
+.list li.cursor .name { justify-self: start; background: var(--signal); color: #1c1c1c; padding: 0 6px; margin-left: -6px; }
 
 h3 { margin: 0; font-size: 30px; font-weight: 600; line-height: 1; letter-spacing: -0.04em; }
 
 /* ---------------------------------------------------------------- the device */
-/* One panel for all the screens: small knobs and buttons, the labels at their usual size. */
-#device { padding: 18px 20px 20px; border: var(--line) solid var(--ink); display: grid; gap: 16px; }
-/* (the chosen screen is empty, or its firmware stopped: nothing here does anything) */
-#device.locked > * { opacity: .3; pointer-events: none; }
-
-.knobs { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 12px 8px; }
-@media (max-width: 620px) { .knobs { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* One panel for all the screens. */
+.knobs { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 0 2px; }
 .knob { --turn: 0deg; display: flex; flex-direction: column; align-items: center; cursor: ns-resize; touch-action: none; }
 .knob::before {
   content: ""; display: block; width: 44px; aspect-ratio: 1; border: var(--line) solid var(--ink); border-radius: 50%; transform: rotate(var(--turn));
@@ -167,20 +174,35 @@ h3 { margin: 0; font-size: 30px; font-weight: 600; line-height: 1; letter-spacin
 }
 .knob:hover::before, .knob.turning::before { background-color: color-mix(in srgb, var(--ink) 8%, transparent); }
 .knob.turning::before { border-color: var(--signal); background-image: linear-gradient(var(--signal), var(--signal)); }
-.knob::after { content: attr(data-label); display: block; margin-top: 6px; font-size: 13px; white-space: nowrap; }
+.knob::after { content: attr(data-label); display: block; margin-top: 6px; font-size: 12px; white-space: nowrap; }
 
-.buttons { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 6px; }
-@media (max-width: 760px) { .buttons { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
-.btn { --led: 0; padding: 7px 0; font-size: 13px; touch-action: none; background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), transparent); }
+.buttons { display: grid; grid-template-columns: 70px 14px repeat(6, 70px); gap: 6px; justify-content: space-between; }
+@media (max-width: 760px) { .buttons { grid-template-columns: 1fr 14px repeat(6, 1fr); } }
+/* oct+ top, oct- bottom, a gap, then the other twelve in order, six to a row */
+.btn[data-key="1"] { grid-area: 1 / 1; }
+.btn[data-key="0"] { grid-area: 2 / 1; }
+.btn[data-key="2"] { grid-area: 1 / 3; }
+.btn[data-key="3"] { grid-area: 1 / 4; }
+.btn[data-key="4"] { grid-area: 1 / 5; }
+.btn[data-key="5"] { grid-area: 1 / 6; }
+.btn[data-key="6"] { grid-area: 1 / 7; }
+.btn[data-key="7"] { grid-area: 1 / 8; }
+.btn[data-key="8"] { grid-area: 2 / 3; }
+.btn[data-key="9"] { grid-area: 2 / 4; }
+.btn[data-key="10"] { grid-area: 2 / 5; }
+.btn[data-key="11"] { grid-area: 2 / 6; }
+.btn[data-key="12"] { grid-area: 2 / 7; }
+.btn[data-key="13"] { grid-area: 2 / 8; }
+.btn { --led: 0; padding: 0; aspect-ratio: 1; font-size: 13px; touch-action: none; background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), transparent); }
 .btn:hover { background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), color-mix(in srgb, var(--ink) 10%, transparent)); color: var(--ink); }
 .btn.down, .btn.down:hover { background: var(--ink); color: var(--paper); }
 
-#keys { position: relative; height: clamp(84px, 9vw, 116px); touch-action: none; }
+#keys { position: relative; min-height: 90px; touch-action: none; }
 .key { --led: 0; position: absolute; top: 0; cursor: pointer; border: var(--line) solid var(--black-key-edge); }
 .key.white { bottom: 0; margin-right: calc(var(--line) * -1); background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), var(--key)); }
 .key.black { height: 58%; z-index: 1; background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), #1c1c1c); }
 .key.down { background: var(--signal); }
 
-.hints { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.7; }
+.hints { margin: 0; text-align: center; color: var(--mute); font-size: 13px; line-height: 1.7; }
 #playing-into { color: var(--ink); }
 kbd { font: inherit; color: var(--ink); border: 1px solid var(--mute); padding: 0 5px; }

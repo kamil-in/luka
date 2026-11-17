@@ -49,21 +49,22 @@ showTheme();
 function makeSlots(count) {
   slots = Array.from({ length: count }, (_, n) => {
     const canvas = el("canvas", { width: 240, height: 240 });
-    const s = { n, ctx: canvas.getContext("2d"), pending: null, firmware: null, loading: null, muted: false, paused: false, levels: null, pot: 800 };
+    const s = { n, canvas, ctx: canvas.getContext("2d"), pending: null, firmware: null, loading: null, muted: false, paused: false, levels: null, pot: 800 };
     s.image = s.ctx.createImageData(240, 240);
     s.name = el("span", { className: "name" });
     s.mute = el("button", { className: "text mute", type: "button", onclick: () => send({ type: "mute", slot: n, muted: !s.muted }) });
     // (stop holds the firmware where it is, still loaded; the list's unload takes it away.
     // A stopped firmware is left alone by the panel: see `live`)
     s.stop = el("button", { className: "text run", type: "button", onclick: () => { if (n === selected && !s.paused) releaseAll(); send({ type: "pause", slot: n, paused: !s.paused }); } });
+    s.choose = el("button", { className: "choose", type: "button", textContent: "choose firmware", onclick: () => { select(n); menu(true); } });
     s.el = el("article", { className: "slot" },
-      el("div", { className: "bar" }, el("span", { className: "num", textContent: String(n + 1) }), s.name, s.mute, s.stop),
-      el("div", { className: "glass" }, canvas,
-        el("button", { className: "choose", type: "button", textContent: "choose firmware", onclick: () => { select(n); menu(true); } })));
+      el("div", { className: "glass" }, canvas, s.choose),
+      el("div", { className: "bar" }, el("span", { className: "num", textContent: String(n + 1) }), s.name),
+      el("div", { className: "ctl" }, s.mute, s.stop));
     s.el.addEventListener("pointerdown", () => select(n));
     return s;
   });
-  $("screens").replaceChildren(...slots.map((s) => s.el));
+  $("slots").replaceChildren(...slots.map((s) => s.el));
   slots.forEach(drawSlot);
   showSelected();
 }
@@ -75,17 +76,34 @@ function drawSlot(s) {
   s.el.classList.toggle("paused", !!s.firmware && s.paused);
   s.el.classList.toggle("selected", s.n === selected);
   s.name.textContent = s.firmware ? s.firmware.repo : s.loading ? "loading…" : "empty";
+  s.name.hidden = !busy;
+  s.choose.hidden = busy;
   s.mute.hidden = !s.firmware;
   s.mute.textContent = s.muted ? "unmute" : "mute";
   s.stop.hidden = !s.firmware;
   s.stop.textContent = s.paused ? "play" : "stop";
+  if (s.n === selected) drawStage();
 }
+
+/// The big screen: the chosen slot's firmware, copied from its small screen.
+const stageCtx = $("stage-canvas").getContext("2d");
+function drawStage() {
+  const s = cur();
+  if (!s) return;
+  stageCtx.clearRect(0, 0, 240, 240);
+  if (s.firmware) stageCtx.drawImage(s.canvas, 0, 0);
+  const stage = $("stage");
+  stage.classList.toggle("empty", !s.firmware && !s.loading);
+  stage.classList.toggle("paused", !!s.firmware && s.paused);
+  $("stage-name").textContent = s.firmware ? s.firmware.repo : s.loading ? "loading…" : "";
+}
+$("stage-choose").addEventListener("click", () => menu(true));
 
 function onFrame(rgba, slot = 0) {
   const s = slots[slot];
   if (!s || rgba.length !== s.image.data.length) return;
   // (several frames between two repaints: only the last is drawn)
-  if (!s.pending) requestAnimationFrame(() => { if (!s.pending) return; s.image.data.set(s.pending); s.ctx.putImageData(s.image, 0, 0); s.pending = null; });
+  if (!s.pending) requestAnimationFrame(() => { if (!s.pending) return; s.image.data.set(s.pending); s.ctx.putImageData(s.image, 0, 0); s.pending = null; if (s.n === selected) drawStage(); });
   s.pending = rgba;
 }
 
