@@ -6,7 +6,7 @@
 > **Interface Family**: `felucca`  
 > **Source Shim**: `web/emu/felucca_web.c`  
 > **Build Instructions**: `web/emu/build.sh / web/emu/build_wasi.sh`  
-> **Binary Artifact**: `dist/fmini-1.wasm` (786.4 KB, SHA-256: `a962e03320e42dba...`)  
+> **Binary Artifact**: `dist/fmini-1.wasm` (787.4 KB, SHA-256: `2981aba4dee2595a...`)  
 
 ## Overview
 

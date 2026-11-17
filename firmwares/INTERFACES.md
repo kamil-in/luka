@@ -6,10 +6,10 @@ This document provides the complete interface documentation for all 21 community
 
 | Firmware | Repository | Style Family | Wasm Size | Exports | Detailed Spec |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **FMini-1** | [ruppert/fmini-1](https://github.com/ruppert/fmini-1) | `felucca` | 786.4 KB | 29 | [FMini-1 Interface](docs/fmini-1.md) |
+| **FMini-1** | [ruppert/fmini-1](https://github.com/ruppert/fmini-1) | `felucca` | 787.4 KB | 29 | [FMini-1 Interface](docs/fmini-1.md) |
 | **Melodee** | [keremimo/melodee](https://github.com/keremimo/melodee) | `melodee` | 1008.0 KB | 15 | [Melodee Interface](docs/melodee.md) |
 | **Skiff** | [illuminus5/skiff](https://github.com/illuminus5/skiff) | `felucca` | 1058.9 KB | 32 | [Skiff Interface](docs/skiff.md) |
-| **Felucca** | [hugelton/Felucca](https://github.com/hugelton/Felucca) | `felucca (emulated / felucca_web core)` | 786.4 KB | 29 | [Felucca Interface](docs/Felucca.md) |
+| **Felucca** | [hugelton/Felucca](https://github.com/hugelton/Felucca) | `felucca (emulated / felucca_web core)` | 787.4 KB | 29 | [Felucca Interface](docs/Felucca.md) |
 | **AMB-1** | [charlesvestal/fm1-amb](https://github.com/charlesvestal/fm1-amb) | `x0x` | 115.8 KB | 35 | [AMB-1 Interface](docs/fm1-amb.md) |
 | **OberVave** | [zvenson/obervave](https://github.com/zvenson/obervave) | `sim` | 235.1 KB | 28 | [OberVave Interface](docs/obervave.md) |
 | **GR!MM** | [GRiMMBIENT/grimm](https://github.com/GRiMMBIENT/grimm) | `asyncify` | 697.3 KB | 41 | [GR!MM Interface](docs/grimm.md) |
@@ -20,7 +20,7 @@ This document provides the complete interface documentation for all 21 community
 | **Mutable Dreams** | [kidbee85-beep/mutable-dreams](https://github.com/kidbee85-beep/mutable-dreams) | `dream` | 836.7 KB | 47 | [Mutable Dreams Interface](docs/mutable-dreams.md) |
 | **FRASIL** | [styvesgoupil/frasil](https://github.com/styvesgoupil/frasil) | `frasil` | 603.2 KB | 55 | [FRASIL Interface](docs/frasil.md) |
 | **CoralFlower** | [FicusFicusov/CoralFlower](https://github.com/FicusFicusov/CoralFlower) | `coralflower` | 609.9 KB | 36 | [CoralFlower Interface](docs/CoralFlower.md) |
-| **S1Vave** | [AndrewGG88/S1Vave](https://github.com/AndrewGG88/S1Vave) | `sim` | 178.9 KB | 28 | [S1Vave Interface](docs/S1Vave.md) |
+| **S1Vave** | [AndrewGG88/S1Vave](https://github.com/AndrewGG88/S1Vave) | `sim` | 173.8 KB | 28 | [S1Vave Interface](docs/S1Vave.md) |
 | **ZEN-1** | [aceyprime/zen-1](https://github.com/aceyprime/zen-1) | `zen` | 635.6 KB | 46 | [ZEN-1 Interface](docs/zen-1.md) |
 | **Arctic Scream** | [PolarPatch/Arctic-scream-FM-1](https://github.com/PolarPatch/Arctic-scream-FM-1) | `asyncify` | 458.3 KB | 42 | [Arctic Scream Interface](docs/Arctic-scream-FM-1.md) |
 | **FiMba-1** | [jadamsowers/fm1-fimba](https://github.com/jadamsowers/fm1-fimba) | `x0x` | 88.4 KB | 29 | [FiMba-1 Interface](docs/fm1-fimba.md) |
