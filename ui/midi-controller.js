@@ -7,10 +7,11 @@
 // from the page as `host`:
 //
 //   host.labels                 names of the knobs, in order (how many there are is how many are learned)
-//   host.notes                  { offset, range: [lo, hi] }: which panel key a MIDI note is (id = note + offset);
-//                               notes outside the keys are moved by octaves until they are on them
+//   host.note({ note, channel, down, velocity })
+//                               a note played (not learned as a control): the page gives it to the
+//                               firmware as MIDI, at its own pitch
 //   host.key({ id, down, velocity })
-//                               a note played: the panel key goes down or up
+//                               a learned rule that presses a panel key or button
 //   host.act(name)              "nav-left", "nav-right", "play" or "firm": the page does it
 //   host.list({ delta, value }) the list-navigation knob turned (delta clicks, + clockwise)
 //   host.knob(i, { delta, value })
@@ -64,6 +65,7 @@ export function connectMidi({ button, host }) {
   const manager = new MidiManager({
     onInput: (event) => {
       if (event.type === "key") return host.key(event);
+      if (event.type === "note") return host.note(event);
       if (event.type !== "action") return;
       if (event.name.startsWith("knob-")) host.knob(Number(event.name.slice(5)), event);
       else if (event.name === "list") host.list(event);
@@ -83,8 +85,9 @@ export function connectMidi({ button, host }) {
       paintPop();
     },
   });
-  // what is learned comes first; every other note plays the panel's keys
-  const noteRule = { from: { type: "note" }, to: { type: "key", offset: host.notes.offset, idRange: host.notes.range, fold: 12 } };
+  // what is learned comes first; every other note goes to the firmware as the note it is (its MIDI IN:
+  // the pitch it means, any octave, as a controller plugged into the FM-1 itself)
+  const noteRule = { from: { type: "note" }, to: { type: "note" } };
   manager.register(learnedProfile({ rules: () => [...Object.values(assigned), noteRule] }));
 
   async function start() {

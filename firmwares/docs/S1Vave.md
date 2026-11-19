@@ -6,7 +6,7 @@
 > **Interface Family**: `sim`  
 > **Source Shim**: `web/sim/sim.c`  
 > **Build Instructions**: `web/sim/build.sh`  
-> **Binary Artifact**: `dist/S1Vave.wasm` (173.8 KB, SHA-256: `7fad0b0919caa3fe...`)  
+> **Binary Artifact**: `dist/S1Vave.wasm` (178.9 KB, SHA-256: `e54f0f741bd9b7b2...`)  
 
 ## Overview
 

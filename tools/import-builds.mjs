@@ -15,7 +15,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { identify } from "../ui/web/native-kinds.js";
-import { selfStarts } from "./self-start.mjs";
+import { playsMidiNotes, selfStarts } from "./self-start.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(root, "firmwares", "dist");
@@ -38,13 +38,14 @@ for (const b of listed) {
   const imports = [...new Set(WebAssembly.Module.imports(module).map((i) => `${i.module}.${i.name}`))].sort();
   const { family, style, note } = identify(exports, imports);
   const autostarts = await selfStarts(bytes, style); // (it plays by itself from power on: the page loads it muted)
+  const midi_notes = await playsMidiNotes(bytes, style); // (a controller's notes go to its MIDI IN; else to its keys)
   copyFileSync(join(dist, b.file), join(out, `${b.id}.wasm`));
   imported.push({
     id: b.id, name: b.name, repo: b.repo, branch: b.branch, path: `firmwares/dist/${b.file}`, commit: b.commit || "0000000",
     source: b.url, file: `${b.id}.wasm`, size: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex"),
-    family, style, note, autostarts, exports, imports,
+    family, style, note, autostarts, midi_notes, exports, imports,
   });
-  console.log(`${b.name.padEnd(20)} ${String(Math.round(bytes.length / 1024)).padStart(5)} KB  ${family.padEnd(11)} ${style ? "plays" : "listed only: " + note}${autostarts ? "  (starts by itself)" : ""}`);
+  console.log(`${b.name.padEnd(20)} ${String(Math.round(bytes.length / 1024)).padStart(5)} KB  ${family.padEnd(11)} ${style ? "plays" : "listed only: " + note}${autostarts ? "  (starts by itself)" : ""}${midi_notes ? "  (MIDI notes)" : ""}`);
 }
 
 const repos = new Set(imported.map((b) => b.repo.toLowerCase()));

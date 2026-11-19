@@ -97,11 +97,13 @@ main { flex: 1; display: flex; flex-direction: column; gap: 18px; width: 100%; m
 #stage .choose { position: absolute; inset: 0; margin: auto; width: fit-content; height: fit-content; padding: 4px 12px; font-size: 13px; color: #f0eee9; border-color: #f0eee9; }
 #stage .choose:hover { background: #f0eee9; color: #1c1c1c; }
 #stage:not(.empty) .choose { display: none; }
+/* a firmware from last time, waiting for the click that lets the page make sound: its play button */
+#stage .choose.resume { display: block; padding: 8px 22px; font-size: 16px; background: var(--signal); border-color: var(--signal); color: #1c1c1c; }
+#stage .choose.resume:hover { background: #f0eee9; border-color: #f0eee9; }
 #side { min-width: 0; display: grid; grid-template-rows: auto auto auto minmax(90px, 1fr); gap: 20px; padding-top: 36px; }
 /* (the chosen screen is empty, or its firmware stopped: nothing on the panel does anything) */
 #device.locked .knobs, #device.locked .buttons, #device.locked #keys { opacity: .3; pointer-events: none; }
 @media (max-width: 760px) { #device { grid-template-columns: minmax(0, 1fr); } #side { width: 100%; } #stage { width: 100%; } #side { padding-top: 0; } }
-
 #slots { display: grid; grid-template-columns: repeat(4, 130px); justify-content: space-between; }
 .slot { margin: 0; padding: 6px; border: var(--line) solid var(--ink); cursor: pointer; min-width: 0; }
 .slot.selected { border-color: var(--signal); box-shadow: 0 0 0 var(--line) var(--signal); }
@@ -111,6 +113,8 @@ main { flex: 1; display: flex; flex-direction: column; gap: 18px; width: 100%; m
 .slot .choose { position: absolute; inset: 0; margin: auto; width: fit-content; max-width: 90%; height: fit-content; padding: 4px 10px; font-size: 13px; line-height: 1.15; color: #f0eee9; border-color: #f0eee9; }
 .slot .choose:hover { background: #f0eee9; color: #1c1c1c; }
 .slot:not(.empty) .choose { display: none; }
+.slot .choose.resume { display: block; background: var(--signal); border-color: var(--signal); color: #1c1c1c; }
+.slot .choose.resume:hover { background: #f0eee9; border-color: #f0eee9; }
 .slot .bar { display: flex; gap: 6px; margin-top: 6px; font-size: 13px; }
 .slot .num { font-feature-settings: "tnum"; }
 .slot .num::after { content: "."; }
@@ -201,8 +205,23 @@ h3 { margin: 0; font-size: 30px; font-weight: 600; line-height: 1; letter-spacin
 .key { --led: 0; position: absolute; top: 0; cursor: pointer; border: var(--line) solid var(--black-key-edge); }
 .key.white { bottom: 0; margin-right: calc(var(--line) * -1); background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), var(--key)); }
 .key.black { height: 58%; z-index: 1; background: color-mix(in srgb, var(--signal) calc(var(--led) * 100%), #1c1c1c); }
-.key.down { background: var(--signal); }
+.key.down, .key.held { background: var(--signal); }
 
 .hints { margin: 0; text-align: center; color: var(--mute); font-size: 13px; line-height: 1.7; }
 #playing-into { color: var(--ink); }
 kbd { font: inherit; color: var(--ink); border: 1px solid var(--mute); padding: 0 5px; }
+
+/* ---------------------------------------------------------------- a phone (last, so it wins over the rules above)
+   the four slots share the width (their previews shrink with it), the knobs go four to a row */
+@media (max-width: 600px) {
+  main { padding: 16px 16px 24px; }
+  #device { width: 100%; }
+  #slots { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .slot { padding: 4px; }
+  .slot canvas { width: 100%; height: auto; aspect-ratio: 1; }
+  .slot .choose { font-size: 11px; padding: 3px 5px; }
+  .slot .ctl { gap: 6px; flex-wrap: wrap; }
+  .knobs { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 2px; }
+  .buttons { grid-template-columns: minmax(0, 1fr) 6px repeat(6, minmax(0, 1fr)); gap: 4px; }
+  .btn { font-size: 12px; }
+}

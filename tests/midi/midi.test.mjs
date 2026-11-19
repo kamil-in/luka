@@ -217,6 +217,16 @@ test("learned buttons: a press does the action, a release nothing", async () => 
   assert.deepEqual(events.map((e) => e.name), ["nav-left", "nav-right", "play"]);
 });
 
+test("a note rule to `note` gives the note itself, any octave, for the firmware's MIDI IN", () => {
+  const map = createMapper([{ from: { type: "note" }, to: { type: "note" } }]);
+  assert.deepEqual(map([0x90, 48, 90]), [{ type: "note", note: 48, channel: 1, down: true, velocity: 90 }]);  // C3: not folded
+  assert.deepEqual(map([0x93, 96, 20]), [{ type: "note", note: 96, channel: 4, down: true, velocity: 20 }]);  // C7, channel 4
+  assert.deepEqual(map([0x80, 48, 64]), [{ type: "note", note: 48, channel: 1, down: false, velocity: 0 }]);
+  assert.deepEqual(map([0x90, 48, 0]), [{ type: "note", note: 48, channel: 1, down: false, velocity: 0 }]);   // note on at 0 = off
+  // (C3 and C4 stay an octave apart: the order of a tune is kept)
+  assert.equal(map([0x90, 60, 90])[0].note - map([0x90, 48, 90])[0].note, 12);
+});
+
 test("notes outside the panel's keys are moved by octaves until they are on them", () => {
   const map = createMapper([{ from: { type: "note" }, to: { type: "key", offset: -39, idRange: [14, 40], fold: 12 } }]);
   const id = (n) => map([0x90, n, 90])[0].id;

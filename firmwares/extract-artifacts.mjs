@@ -1,5 +1,5 @@
 // Node.js script to reliably retrieve, extract, and verify web native WASM artifacts
-// for all 21 FM-1 community firmwares.
+// for every FM-1 community firmware in ARTIFACT_MAP.
 //
 // Usage: node extract-artifacts.mjs [--all] [--id <firmware-id>]
 
@@ -164,7 +164,60 @@ const ARTIFACT_MAP = [
     type: 'web-html-b64',
     url: 'https://gadlele.github.io/Golana/try/',
   },
+  {
+    // (built by its Pages workflow, not kept in the repository)
+    id: 'loaf-breaker',
+    name: 'LOAF BREAKER',
+    type: 'web',
+    url: 'https://flexor-r.github.io/loaf-breaker/emu/app.wasm',
+  },
+  {
+    id: 'OSR-1',
+    name: 'Blop',
+    type: 'git',
+    ref: 'origin/gh-pages:emu/app.wasm',
+  },
+  {
+    id: 'jamtrack-fm1',
+    name: 'JAMTRACK',
+    type: 'local',
+    path: 'companion/emulator/app.wasm',
+  },
+  {
+    id: 'PERF-1',
+    name: 'PERF-1',
+    type: 'git',
+    ref: 'origin/gh-pages:emu/amb.wasm',
+  },
+  {
+    // (the page inlines the wasm and the sound pack; the pack goes into the wasm's "luka.pack" section)
+    id: 'm-pyre',
+    name: 'M-PYRE',
+    type: 'local-html-pack',
+    path: 'docs/emu/index.html',
+    wasmVar: 'WASM_B64',
+    packVar: 'PACK_B64',
+  },
 ];
+
+// A WebAssembly custom section (engines skip it): how a build carries what its page inlined
+// beside it, such as M-PYRE's sound pack (read by ui/web/native-worklet.js as "luka.pack").
+function leb(n) {
+  const out = [];
+  do { let b = n & 0x7f; n >>>= 7; if (n) b |= 0x80; out.push(b); } while (n);
+  return Buffer.from(out);
+}
+function withSection(wasm, name, payload) {
+  const nameBytes = Buffer.from(name, 'utf8');
+  const body = Buffer.concat([leb(nameBytes.length), nameBytes, payload]);
+  return Buffer.concat([wasm, Buffer.from([0]), leb(body.length), body]);
+}
+
+// A page that inlines its build as base64 in a JS string (`const NAME = "..."`).
+function inlined(html, name) {
+  const m = html.match(new RegExp(`const ${name}\\s*=\\s*"([A-Za-z0-9+/=]*)"`));
+  return m ? Buffer.from(m[1], 'base64') : null;
+}
 
 async function extractOne(item) {
   const repoDir = join(root, item.id);
@@ -206,11 +259,23 @@ async function extractOne(item) {
     }
   }
 
-  // If web binary or web HTML with base64 wasm
-  if (item.type === 'web' || item.type === 'web-html-b64') {
-    if (existsSync(outPath) && readFileSync(outPath).length > 1000) {
-      return true; // Already cached
+  // A page in the repo that inlines the wasm and a sound pack as JS strings (M-PYRE)
+  if (item.type === 'local-html-pack') {
+    const src = join(repoDir, item.path);
+    if (existsSync(src)) {
+      const html = readFileSync(src, 'utf8');
+      const wasm = inlined(html, item.wasmVar), pack = inlined(html, item.packVar);
+      if (wasm && pack && pack.length) {
+        writeFileSync(outPath, withSection(wasm, 'luka.pack', pack));
+        return true;
+      }
+      console.warn(`  [WARN] ${item.id}: ${item.path} has no ${wasm ? item.packVar : item.wasmVar}`);
     }
+  }
+
+  // If web binary or web HTML with base64 wasm
+  // (fetched again every run, so an author's newer publish comes in; the last copy stays if the fetch fails)
+  if (item.type === 'web' || item.type === 'web-html-b64') {
     try {
       const res = await fetch(item.url, { redirect: 'follow' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -226,8 +291,9 @@ async function extractOne(item) {
           }
         }
       } else {
-        const ab = await res.arrayBuffer();
-        writeFileSync(outPath, Buffer.from(ab));
+        const buf = Buffer.from(await res.arrayBuffer());
+        if (buf.subarray(0, 4).toString('latin1') !== '\0asm') throw new Error('not WebAssembly');
+        writeFileSync(outPath, buf);
         return true;
       }
     } catch (e) {

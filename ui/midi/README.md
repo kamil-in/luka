@@ -37,11 +37,19 @@ others by how far it moved; an **endless** one (relative) turns them by its clic
 from what it sent (`modeOf` in `learn.js`): a few small steps look like an endless
 one, a wide sweep like a position. A control does one thing: learning it again elsewhere lets go of its old job.
 
-**Notes play the panel's keys** (any channel), with no learning: MIDI note 53 (F3) is the panel's lowest key and 79
-(G5) its highest, so a note in that span plays the key of its pitch, and one outside it is moved by octaves onto the
-keys (the same note name, so a 25-key controller plays whatever octave it is on). A note you have learned for a
-button (navigation, play, Firm) does that instead. The held key and its velocity reach the firmware as if clicked;
-a stopped firmware takes nothing.
+**Notes go to the firmware as MIDI** (2026-11-19), with no learning: the chosen screen's firmware gets each note on
+its MIDI IN, as a controller plugged into the FM-1 itself would give it: its own pitch, in any octave, on the
+controller's channel, with its velocity. The panel's key of that pitch (MIDI 53 F3 to 79 G5) lights while held. A
+note-off goes to the firmware its note-on went to, even if another screen is chosen meanwhile. A note you have
+learned for a button (navigation, play, Firm) does that instead; a stopped firmware takes nothing.
+
+A firmware whose MIDI IN plays no notes, or that has none (measured when builds are imported:
+`tools/self-start.mjs` `playsMidiNotes`, the manifest's `midi_notes`), gets the notes as its keys
+(`native-worklet.js` `NoteKeys`): the whole keyboard moved by octaves onto the 27 keys, so a tune keeps its shape;
+the move changes only when a note does not fit and none is held.
+
+(Before: every note was folded onto the keys on its own, so on a 25-key controller C3 sounded above F3, and C3
+and C4 were the same key.)
 
 Only notes, controller changes and the like are used: the page asks the browser for plain MIDI, not
 system-exclusive.

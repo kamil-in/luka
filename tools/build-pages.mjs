@@ -6,7 +6,7 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writ
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { identify } from "../ui/web/native-kinds.js";
-import { selfStarts } from "./self-start.mjs";
+import { playsMidiNotes, selfStarts } from "./self-start.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = resolve(root, process.argv[2] || "_site");
@@ -51,6 +51,7 @@ for (const b of listed) {
   const imports = [...new Set(WebAssembly.Module.imports(module).map((i) => `${i.module}.${i.name}`))].sort();
   const { family, style, note } = identify(exports, imports);
   const autostarts = await selfStarts(bytes, style);
+  const midi_notes = await playsMidiNotes(bytes, style);
 
   // Copy wasm file to native directory
   copyFileSync(distFile, join(nativeOut, b.file));
@@ -70,6 +71,7 @@ for (const b of listed) {
     style,
     note,
     autostarts,
+    midi_notes,
   });
   console.log(`${b.name.padEnd(20)} ${String(Math.round(bytes.length / 1024)).padStart(5)} KB  ${family.padEnd(11)} ${style ? "plays" : "listed only: " + note}${autostarts ? "  (starts by itself)" : ""}`);
 }

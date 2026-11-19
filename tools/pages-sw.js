@@ -41,7 +41,8 @@ async function build(request, url) {
 async function shell(request) {
   try {
     const response = await fetch(request);
-    if (response.ok) caches.open(SHELL).then((cache) => cache.put(request, response.clone())).catch(() => {});
+    // (copied now, before the page starts reading the response: a copy taken later fails)
+    if (response.ok) { const copy = response.clone(); caches.open(SHELL).then((cache) => cache.put(request, copy)).catch(() => {}); }
     return response;
   } catch (e) {
     const kept = await caches.match(request, { ignoreSearch: true });

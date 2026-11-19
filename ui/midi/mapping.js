@@ -7,6 +7,7 @@
 //   { type: "encoder", id, clicks }           an encoder turned (+: clockwise)
 //   { type: "analog", channel, value }        a pot, fader or wheel, 0..1023
 //   { type: "midi", bytes }                   bytes for the firmware's own MIDI IN
+//   { type: "note", note, channel, down, velocity }   a note played, as it is (for the firmware's MIDI IN)
 //   { type: "action", name }                  something for the page itself to do ("nav-left", ...)
 //   { type: "action", name, delta, value? }   a knob: how far it turned (in clicks) and, if it says
 //                                             where it stands (an absolute one), that, 0..127
@@ -23,6 +24,8 @@
 //                        the range it is dropped, or, with `fold`, moved by that many (an octave) until it is in
 //                   { type: "key", table: { "36": 0, "37": 1 } }     id by note number
 //                   { type: "key", id: n }                           one key for the whole `from`
+//                   { type: "note" }                                 the note itself, for the firmware's
+//                        own MIDI IN: { type: "note", note, channel, down, velocity }
 //   to (cc):        { type: "analog", channel: n, max?: 1023 }       0..127 scaled to 0..max
 //                   { type: "encoder", id: n, mode }                 mode: "absolute" (turns by the
 //                        change since the last value), "binary-offset" (64 = still, +/- from it),
@@ -112,6 +115,7 @@ function convert(rule, to, m, last) {
     return pressed && to.name ? [{ type: "action", name: to.name }] : [];
   }
   if (m.type === "raw") return [];
+  if (m.type === "note" && to.type === "note") return [{ type: "note", note: m.number, channel: m.channel, down: m.down, velocity: m.down ? m.velocity : 0 }];
   if (m.type === "note") {
     let id = to.id;
     if (to.table) id = to.table[m.number];

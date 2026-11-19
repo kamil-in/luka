@@ -345,6 +345,72 @@ const FIRMWARES = [
     buildScript: 'web/emu/build_wasm.sh; published build: https://gadlele.github.io/Golana/try/ (wasm embedded in the page)',
     compiler: 'clang --target=wasm32 (no Emscripten)',
   },
+  // Added 2026-11-19
+  {
+    id: 'loaf-breaker',
+    name: 'LOAF BREAKER',
+    repo: 'FLEXOR-R/loaf-breaker',
+    url: 'https://github.com/FLEXOR-R/loaf-breaker',
+    author: 'FLEXOR',
+    license: 'MPL-2.0',
+    style: 'x0x',
+    description: 'Hardcore kick synthesizer (gabber, terror, speedcore) and breakbeat chopper: twenty kicks with distortion, sliced breaks, effects, drums and songs with drops.',
+    sourceShim: 'base/ (fm1-base web shim)',
+    buildScript: 'build.sh; published build: https://flexor-r.github.io/loaf-breaker/emu/app.wasm (made by its Pages workflow)',
+    compiler: 'Emscripten (emcc)',
+  },
+  {
+    id: 'OSR-1',
+    name: 'Blop',
+    repo: 'OSR-Experiment/OSR-1',
+    url: 'https://github.com/OSR-Experiment/OSR-1',
+    author: 'Obsimo',
+    license: 'GPL-3.0',
+    style: 'x0x',
+    description: 'One-finger chords from 38 grids, chord rhythms, a bass with its own riffs and discreet drums with sidechain, with an aquarium creature on the screen.',
+    sourceShim: 'base/ (fm1-base web shim)',
+    buildScript: 'tools/build_web.sh; published build: gh-pages emu/app.wasm',
+    compiler: 'clang --target=wasm32',
+  },
+  {
+    id: 'jamtrack-fm1',
+    name: 'JAMTRACK',
+    repo: 'Philip-Bos/jamtrack-fm1',
+    url: 'https://github.com/Philip-Bos/jamtrack-fm1',
+    author: 'PhilipsKnobs',
+    license: 'MIT',
+    style: 'x0x',
+    description: 'A backing band to play over: drums, bass, chords and a synth line follow your chords in any key and time signature, with 160 factory jams in 16 genres.',
+    sourceShim: 'base/ (fm1-base web shim)',
+    buildScript: 'companion/emulator/app.wasm (committed build)',
+    compiler: 'Emscripten (emcc)',
+  },
+  {
+    id: 'PERF-1',
+    name: 'PERF-1',
+    repo: 'deamonSLINKY/PERF-1',
+    url: 'https://github.com/deamonSLINKY/PERF-1',
+    author: 'deamonSLINKY',
+    license: 'GPL-3.0',
+    style: 'x0x',
+    description: 'A groovebox that plays itself while you steer it: nineteen genres, FM pad, bass, acid and pluck voices, a step sequencer, an auto-DJ and scenes.',
+    sourceShim: 'web/emu/amb_web.c',
+    buildScript: 'web/emu/build.sh; published build: gh-pages emu/amb.wasm',
+    compiler: 'clang --target=wasm32',
+  },
+  {
+    id: 'm-pyre',
+    name: 'M-PYRE',
+    repo: 'HistoryOfSky/m-pyre',
+    url: 'https://github.com/HistoryOfSky/m-pyre',
+    author: 'History Of Sky',
+    license: 'GPL-3.0',
+    style: 'mpyre',
+    description: 'A riffbox for rock and metal: guitar, bass and drum samples, an amp engine with cabinet IRs, pedals and effects, plus SLOOP\'s synth engines and a 4-track recorder.',
+    sourceShim: 'firmware/host/emu.c',
+    buildScript: 'firmware/host/build_web.sh; published build: docs/emu/index.html (wasm and sound pack inlined; the pack is carried as the wasm\'s "luka.pack" section)',
+    compiler: 'clang --target=wasm32',
+  },
 ];
 
 // Well-known function descriptors
@@ -768,9 +834,9 @@ for (const fw of FIRMWARES) {
 
 // Generate master INTERFACES.md
 let master = `# FM-1 Firmware Interface Catalog & Specification\n\n`;
-master += `This document provides the complete interface documentation for all 21 community firmwares built for the M-VAVE FM-1 pocket synthesizer, detailing their WebAssembly export and import contracts, control schemas, and audio/video interfaces.\n\n`;
+master += `This document provides the complete interface documentation for all ${docSummaries.length} community firmwares built for the M-VAVE FM-1 pocket synthesizer, detailing their WebAssembly export and import contracts, control schemas, and audio/video interfaces.\n\n`;
 
-master += `## Firmware Summary Matrix (21 Firmwares)\n\n`;
+master += `## Firmware Summary Matrix (${docSummaries.length} Firmwares)\n\n`;
 master += `| Firmware | Repository | Style Family | Wasm Size | Exports | Detailed Spec |\n`;
 master += `| :--- | :--- | :--- | :--- | :--- | :--- |\n`;
 for (const s of docSummaries) {
@@ -788,7 +854,7 @@ master += `* **LEDs**: Multi-state masks (\`web_lit_*\`, \`web_dim_*\`, \`web_br
 master += `* **Storage**: 1 MiB raw NOR flash image (\`web_nor\`, \`web_nor_size\`, \`web_flash\`, \`web_flash_stage\`, \`web_nor_erase\`, \`web_flash_writes_count\`).\n\n`;
 
 master += `### 2. The \`x0x\` Family\n`;
-master += `* **Firmwares**: X0X, AMB-1, Niagara Drift, MONK-1, Loom, Aisling, Nachtfahrt, FiMba-1, SATIE-1\n`;
+master += `* **Firmwares**: X0X, AMB-1, Niagara Drift, MONK-1, Loom, Aisling, Nachtfahrt, FiMba-1, SATIE-1, LOAF BREAKER, Blop, JAMTRACK, PERF-1\n`;
 master += `* **Frame Buffer**: 240x240 RGB565 via \`web_fb()\`, tracked by \`web_blits()\`. Byte order matches device SPI panel.\n`;
 master += `* **Controls**: Buttons/keys bitmasks; MONK-1 features per-key strike velocity via \`web_key(id, vel, at)\`. Master pot scaled 0..4096.\n`;
 master += `* **Storage**: Named object slots (\`web_store\`, \`web_store_len\`, \`web_store_set_len\`, \`web_nobj\`, \`web_store_max\`).\n`;
@@ -830,6 +896,15 @@ master += `* **Firmwares**: Melodee\n`;
 master += `* **Frame Buffer**: \`web_fb()\`, revision tracked by \`web_fb_gen()\`. Visual custom UI rendering.\n`;
 master += `* **Controls**: \`web_buttons\`, \`web_keys\`, \`web_encoder\`, \`web_master\`, \`web_midi_in\`.\n`;
 master += `* **LEDs**: Distinct \`web_led_buttons\` and \`web_led_keys\` masks.\n\n`;
+
+master += `### 9. The \`mpyre\` Family\n`;
+master += `* **Firmwares**: M-PYRE\n`;
+master += `* **Execution**: \`emu_init()\`, then \`emu_render()\` returns \`emu_block_frames()\` interleaved stereo floats; the host calls \`emu_ui()\` every 16 ms (it returns 1 when the screen was drawn).\n`;
+master += `* **Frame Buffer**: 240x240 RGB565 at \`emu_screen()\`, in the panel's byte order.\n`;
+master += `* **Controls**: \`emu_button(label, down)\` (FX..REC, OCT-, OCT+), \`emu_keys(mask)\`, \`emu_knob(role, steps)\`, \`emu_volume(0..4096)\`. A press and its release a UI step apart.\n`;
+master += `* **LEDs**: \`emu_led_keys(0|1|2)\` (lit, dim, faint) and \`emu_led_buttons()\`.\n`;
+master += `* **Samples**: four 0x14000-byte slots loaded through \`emu_buffer()\` + \`emu_slot(k)\`, then \`emu_reset_tracks()\`; the author's page inlines them (Luka carries them as the wasm's \`luka.pack\` custom section).\n`;
+master += `* **Storage**: five projects (four SAVE slots, the working one): \`emu_proj_get(i)\` / \`emu_proj_put(i, len)\` through \`emu_buffer()\`, \`emu_proj_changed()\` counts slot changes.\n\n`;
 
 writeFileSync(join(root, 'INTERFACES.md'), master, 'utf8');
 

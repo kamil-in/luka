@@ -329,7 +329,8 @@ export async function connect({ onEvent, onFrame }) {
       const key = `native:${build.repo}`.toLowerCase();
       const save = (await get("saves", key)) || null;
       if (slots[slot] !== entry) return;
-      entry.node.port.postMessage({ type: "start", id, sha256: key, wasm, save, style: build.style, paused: entry.paused }, [wasm]);
+      // (midiNotes: whether a controller's notes go to its MIDI IN or to its keys; an older manifest says nothing: MIDI IN)
+      entry.node.port.postMessage({ type: "start", id, sha256: key, wasm, save, style: build.style, paused: entry.paused, midiNotes: build.midi_notes !== false }, [wasm]);
     } catch (e) {
       if (slots[slot] === entry) free(slot);
       throw e;

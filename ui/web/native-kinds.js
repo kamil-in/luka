@@ -11,6 +11,7 @@
 //             sim         OberVave's and S1Vave's (sim_*, the state as blobs)
 //             asyncify    a coroutine the host drives (web_run / web_take; GR!MM, Arctic Scream)
 //             coralflower CoralFlower's own (web_step, web_flash, web_keymap)
+//             mpyre       M-PYRE's (emu_*: a UI step the host calls, songs as projects, a sound pack)
 //             preview     a sound engine for an editor, no screen or panel (SLOOP)
 //             unknown
 //   style   the adapter of native-worklet.js that plays it, or null (listed only)
@@ -27,6 +28,8 @@ export function identify(exports, imports = []) {
     return { family: "asyncify", style: "asyncify", note: null };
   if (has("web_step", "web_flash", "web_keymap"))
     return { family: "coralflower", style: "coralflower", note: null };
+  if (has("emu_init", "emu_render", "emu_block_frames", "emu_ui", "emu_screen", "emu_keys", "emu_button", "emu_knob"))
+    return { family: "mpyre", style: "mpyre", note: null };
   if (any("preview_") && !has("web_fb"))
     return { family: "preview", style: null, note: "a sound engine without screen or panel: nothing to play with" };
 

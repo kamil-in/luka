@@ -127,7 +127,7 @@ Source of the builds: `firmwares/build-firmwares.ps1` (owner's script) clones th
 puts each wasm in `firmwares/dist/`; `node tools/import-builds.mjs` copies them into
 `.cache/native/` and writes the manifest, deciding each build's family with
 `ui/web/native-kinds.js`. Felucca's dist entry is FMini-1's file again and is skipped (Felucca
-stays emulated). 24 builds are listed and all play (OG Synth, ATEK 303, JIANT and Golana were added 2026-11-16 from the authors' published sites, since no wasm compiler is installed here; SLOOP was taken out of the list by the owner):
+stays emulated). 29 builds are listed and all play (2026-11-19: five more, see "Five more firmwares" above; OG Synth, ATEK 303, JIANT and Golana were added 2026-11-16 from the authors' published sites, since no wasm compiler is installed here; SLOOP was taken out of the list by the owner):
 
 | Family (style) | Builds | State |
 |---|---|---|
@@ -195,7 +195,7 @@ Asked for by the owner:
 ## Several firmwares at once (2026-11-15)
 
 Up to four browser builds play together. Read this before the "UI" section below, which
-describes the page before this change (its list column, big heading and per-row GitHub link
+describes the page before this change, and the layout since moved again: read "Stage layout" below too (its list column, big heading and per-row GitHub link
 are gone).
 
 - **Transport** (`ui/web/transport-web.js`): four slots. `start_build`, `start`, `stop`,
@@ -234,6 +234,113 @@ are gone).
   replace; light and dark; 375 px wide. **The owner played four at once and reported no
   issues.** The sum of four outputs has no headroom or limiter: measure the
   peak if the owner reports distortion. The desktop window was not launched after this change.
+
+## Stage layout (2026-11-19)
+
+Supersedes the "Page" bullet above (four screens in a row, panel below) and the firmware list's
+numbering. Files: `ui/index.html`, `ui/app.js`, `ui/style.css`. **Checked only by measuring boxes
+in the preview pane (1024x768); not looked at on screen, not tried at phone width, no wider
+window, no dark theme, and the desktop window was not launched. The UI changes are in commit 8286e7c.**
+
+- **One block, `#device`**, a two-column grid centred in the page (horizontally, and vertically
+  between the bar and the hints). Left: `#stage`, the chosen slot's firmware as a big square
+  (`#stage-canvas`, an h3 `#stage-name` above it: the firmware's repo name, no number). Right:
+  `#side`, a fixed 546 px wide, holding in order: the four slots, the 8 knobs, the 14 buttons,
+  the keys. All four share that 546 px width.
+- **Stage size** is `--stage` on `#device`: window height minus 230 px, or window width minus
+  620 px, whichever is less, clamped 260-1000 px. Its canvas is a copy of the chosen slot's small
+  canvas: `drawStage()` in `app.js` runs after every painted frame of the chosen slot, on select,
+  and in `drawSlot`. The small canvases are the real targets of `onFrame`; the stage only mirrors.
+- **Slots** are four fixed 130 px boxes in one row (`#slots`, space-between): a 115x115 preview,
+  number + name under it, mute and stop under that. The chosen one has the orange border. An
+  empty slot shows a small "choose firmware" button on its preview (opens the list); the stage
+  has the same button when the chosen slot is empty. Left-to-right selection: keys 1-4, click, and
+  the MIDI nav buttons (`step()` is unchanged: it skips empty slots).
+- **Panel**: knobs in one row of 8 (44 px dials, 12 px labels). Buttons are 70x70 squares on a
+  fixed grid: oct+ top-left, oct- under it, a 14 px gap, then fx scl env lfo edit glo / home
+  save arp seq play rec, six to a row; each is placed by `data-key` in CSS, so the order in the
+  HTML does not matter. The keys fill the rest of the right column's height (min 90 px), meant to
+  end level with the stage's bottom edge. **At 1024x768 they do not**: the right column is taller
+  (570 px) than the stage column (440 px), so the keys end ~130 px lower and the page is exactly
+  one screen tall. On a tall window (stage bigger than the right column) they line up.
+- **The locked state** (empty or stopped chosen slot) greys `.knobs`, `.buttons` and `#keys`,
+  not the whole `#device`, which now also holds the stage and slots.
+- **Below 760 px** the grid is one column: stage on top at full width, then the right column at
+  full width (buttons on fractional tracks, previews still 130 px boxes). Untested.
+- **Firmware list**: no numbers, no playing dot. The row a MIDI controller's Firm button is on
+  shows its name on an orange (`--signal`) background.
+- **Hints line** is centred.
+
+Open questions for the owner: the keys' bottom edge versus the stage's at small windows (shrink
+the spacing, or give the stage a larger minimum); whether 546 px of right column is too wide for
+laptops (the stage gives up the width, 404 px at 1024).
+
+## MIDI controller notes (2026-11-19, owner reported wrong notes)
+
+- **Cause:** every note outside F3..G5 was folded onto the panel keys on its own (`fold: 12`), so on
+  a 25-key controller C3..E3 sounded an octave above F3..G3, and C3 and C4 were one key (a held one
+  cut the other). Above G5 the same, downwards.
+- **Now:** a controller's notes go to the chosen firmware's **MIDI IN** (`{type: "midi"}` input, the
+  protocol's own; `playNote` in `app.js`): the pitch the firmware gives that note, any octave, as on
+  the device with a controller. The panel key lights (class `held`). Note-offs follow their note-on's
+  screen.
+- **Second fault found:** fm1-base builds (the x0x family) take `web_midi_in(port, packet)`, a
+  USB-MIDI packet; the adapter called it `(status, d1, d2)`, so they ignored MIDI. `midiIn()` in
+  `native-worklet.js` now calls by arity (3 bytes / port+packet / packet). Unnoticed before because
+  the page never sent MIDI.
+- Builds whose MIDI IN plays no notes (Blop, AMB-1 measured; or none at all) get notes as keys, the
+  whole keyboard shifted by octaves (`NoteKeys`). Measured at import: manifest `midi_notes` (21 of 29 true).
+- Checked in Node (pitch by autocorrelation: MIDI 48 an octave under 60 on the MIDI builds; a scale
+  C3..C5 in order on the key builds, one octave move where 27 keys cannot hold it). **Not checked with
+  a controller, not listened to; in the page only up to "no errors"** (the pane could not take a click).
+
+## Five more firmwares, M-PYRE adapter, build pipeline fixes (2026-11-19)
+
+29 browser builds are listed now (30 repos; Felucca stays emulated). New: LOAF BREAKER
+(FLEXOR-R/loaf-breaker, MPL-2.0; its build only on its Pages site, fetched from there), Blop
+(OSR-Experiment/OSR-1, gh-pages), JAMTRACK (Philip-Bos/jamtrack-fm1, MIT, committed in
+`companion/emulator/`), PERF-1 (deamonSLINKY/PERF-1, gh-pages; starts by itself, so it loads
+stopped), all `x0x`; and **M-PYRE** (HistoryOfSky/m-pyre), a new family `mpyre`.
+
+- **M-PYRE** (`emu_*`): its own small path in `native-worklet.js` (class `Mpyre`): a UI step
+  (`emu_ui`) every 705.6 frames as its page does, a press and its release a step apart, sound in
+  its own block size, volume 0..4096, songs as five projects (saved every 5 s when changed and at
+  stop; restore checked byte for byte in Node). It needs a 320 KB sound pack its page inlines:
+  `extract-artifacts.mjs` (type `local-html-pack`) appends it to the wasm as the custom section
+  `luka.pack`, so transports, server, Pages and desktop needed no change. No sound pack: it refuses
+  to start and says so.
+- **Every build that imports the WASI `clock_time_get` now gets the device's time** (it was a
+  stub returning nothing, except for CoralFlower). LOAF BREAKER's, Blop's and JAMTRACK's hosts give it.
+- **LOAF BREAKER asks "YOUR MODE" on first start** (a knob, then PLAY); keys are silent until then.
+  That is the firmware, not a fault.
+- **build-firmwares.ps1**: fetches every branch (gh-pages builds were never updated by a pull of
+  main), checks out each repo's *default* branch (`origin/HEAD`; loaf-breaker's is `loaf`), and
+  fast-forwards only. **S1Vave had been built from `main` (v1.12.2, Nov 7) since 2026-11-17; its
+  default is `master` (v2.0.1, Nov 13)**: now from master. `extract-artifacts.mjs` fetches web
+  builds every run (they were cached forever) and refuses a download that is not wasm.
+- Checked: all 29 in Node (start, screen, LEDs; a key makes sound on all but X0X, Niagara Drift,
+  Loom and LOAF BREAKER before its mode, the same with the previous adapter); M-PYRE and LOAF
+  BREAKER on the page at 2 % load together, none late. Nobody has listened.
+
+## Remembered choices, fixes (2026-11-19)
+
+- **Slots are remembered** (`localStorage["luka.slots"]`: each slot's build id, muted, paused, and
+  the chosen slot), written on every started/stopped/paused/muted event and on select; `restore()`
+  in `app.js` loads them again once the list has arrived. A browser allows sound only after a
+  click or key, so unless the page already has that (`navigator.userActivation`,
+  `getAutoplayPolicy`) each waits on its screen (`s.waiting`: its name, an orange "play" button on
+  its preview and on the stage) and the first click or key anywhere loads them all (`click`, not
+  `pointerdown`: a touch counts only once lifted; a press on a play button does nothing else).
+  A waiting slot also has `loading` set, so the list and `target()` see it as taken. Nothing is
+  written until the restore has happened. Checked: two
+  firmwares, one muted, come back after a reload, mute and selection kept.
+- **MIDI learn mappings** were already kept (`localStorage["luka.midi.learned"]`, `midi-controller.js`);
+  a stored mapping survives a reload. Not checked with a real controller (the preview pane refuses MIDI).
+- **Feedback to GitHub issues: built, then removed by the owner** (it needed each user to have a
+  GitHub account; issues without one would need a server holding a token, which Pages cannot be).
+- **Fixed:** search split on the letter "s" (`/s+/`, from the midi-learn commit); phone width
+  (slots were 4x130 px, the page was 544 px wide at 375; rules for <= 600 px are at the end of
+  `style.css`); `pages-sw.js` cloned the page's responses too late to cache them offline.
 
 ## UI (changed 2026-11-14)
 

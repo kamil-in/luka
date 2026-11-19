@@ -5,7 +5,7 @@
     instructions, and generate comprehensive interface documentation.
 
 .DESCRIPTION
-    Runs across all 25 FM-1 pocket synth community firmwares:
+    Runs across every FM-1 community firmware in $repos below, among them:
       - fmini-1 (ruppert/fmini-1)
       - melodee (keremimo/melodee)
       - skiff (illuminus5/skiff)
@@ -51,7 +51,6 @@ $docsDir = Join-Path $firmwaresDir "docs"
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host " FM-1 Community Firmwares - Single-Click Build & Documentation" -ForegroundColor Cyan
 Write-Host " Target Directory: $firmwaresDir" -ForegroundColor Cyan
-Write-Host " Total Firmwares : 25" -ForegroundColor Cyan
 Write-Host "=================================================================`n" -ForegroundColor Cyan
 
 if ($Clean -and (Test-Path $distDir)) {
@@ -87,11 +86,16 @@ $repos = @(
     @{ Id = "OG-Synth-source"; Name = "OG Synth"; Url = "https://github.com/mikejohnsonbeats/OG-Synth-source.git"; BuildScript = "" },
     @{ Id = "FM1-Animatek"; Name = "ATEK 303"; Url = "https://github.com/animatek/FM1-Animatek.git"; BuildScript = "atek303/build.sh" },
     @{ Id = "JIANT"; Name = "JIANT"; Url = "https://github.com/juanjiant-bit/JIANT.git"; BuildScript = "web/emu/build.sh" },
-    @{ Id = "Golana"; Name = "Golana"; Url = "https://github.com/Gadlele/Golana.git"; BuildScript = "web/emu/build_wasm.sh" }
+    @{ Id = "Golana"; Name = "Golana"; Url = "https://github.com/Gadlele/Golana.git"; BuildScript = "web/emu/build_wasm.sh" },
+    @{ Id = "loaf-breaker"; Name = "LOAF BREAKER"; Url = "https://github.com/FLEXOR-R/loaf-breaker.git"; BuildScript = "" },
+    @{ Id = "OSR-1"; Name = "Blop"; Url = "https://github.com/OSR-Experiment/OSR-1.git"; BuildScript = "tools/build_web.sh" },
+    @{ Id = "jamtrack-fm1"; Name = "JAMTRACK"; Url = "https://github.com/Philip-Bos/jamtrack-fm1.git"; BuildScript = "" },
+    @{ Id = "PERF-1"; Name = "PERF-1"; Url = "https://github.com/deamonSLINKY/PERF-1.git"; BuildScript = "web/emu/build.sh" },
+    @{ Id = "m-pyre"; Name = "M-PYRE"; Url = "https://github.com/HistoryOfSky/m-pyre.git"; BuildScript = "" }
 )
 
-# Step 1: Clone, checkout main/master, and update
-Write-Host ">>> [1/3] Cloning and Updating Repositories to Latest main/master..." -ForegroundColor Green
+# Step 1: Clone, checkout each repository's default branch, and update
+Write-Host ">>> [1/3] Cloning and Updating $($repos.Count) Repositories to their latest default branch..." -ForegroundColor Green
 
 foreach ($r in $repos) {
     $repoPath = Join-Path $firmwaresDir $r.Id
@@ -104,18 +108,21 @@ foreach ($r in $repos) {
 
     if (-not $SkipPull) {
         try {
-            # Determine target branch (prefer main, then master)
-            $branches = git -C $repoPath branch -r
-            $targetBranch = "main"
-            if ($branches -match "origin/main") {
-                $targetBranch = "main"
-            } elseif ($branches -match "origin/master") {
-                $targetBranch = "master"
+            # Every branch: some builds are taken from origin/gh-pages, which a pull of main does not bring
+            git -C $repoPath fetch -q --prune origin 2>$null
+            git -C $repoPath remote set-head origin --auto 2>$null | Out-Null
+
+            # The repository's own default branch (loaf-breaker's is "loaf"); else main, then master
+            $targetBranch = (git -C $repoPath symbolic-ref --short refs/remotes/origin/HEAD 2>$null) -replace '^origin/', ''
+            if (-not $targetBranch) {
+                $branches = git -C $repoPath branch -r
+                $targetBranch = if ($branches -match "origin/main") { "main" } elseif ($branches -match "origin/master") { "master" } else { "main" }
             }
 
             Write-Host "  [UPDATE] Checking out $targetBranch for $($r.Name)..." -ForegroundColor DarkCyan
             git -C $repoPath checkout -q $targetBranch 2>$null
-            git -C $repoPath pull -q origin $targetBranch 2>$null
+            git -C $repoPath merge -q --ff-only "origin/$targetBranch" 2>$null
+            if ($LASTEXITCODE -ne 0) { Write-Warning "$($r.Name): could not fast-forward $targetBranch (local changes?); left as it is" }
 
             if (Test-Path (Join-Path $repoPath ".gitmodules")) {
                 Write-Host "  [SUBMODULES] Updating submodules for $($r.Name)..." -ForegroundColor DarkGray
@@ -168,7 +175,7 @@ if (Test-Path $genScript) {
 }
 
 Write-Host "`n=================================================================" -ForegroundColor Cyan
-Write-Host " Finished! All 25 firmwares processed." -ForegroundColor Cyan
+Write-Host " Finished! All $($repos.Count) firmwares processed." -ForegroundColor Cyan
 Write-Host " WASM Binaries : $distDir" -ForegroundColor Cyan
 Write-Host " Documentation : $docsDir and $firmwaresDir\INTERFACES.md" -ForegroundColor Cyan
 Write-Host " Manifest      : $distDir\manifest.json" -ForegroundColor Cyan

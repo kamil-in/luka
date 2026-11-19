@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `web/emu/omni_web.c`  
 > **Build Instructions**: `web/emu/build.sh`  
-> **Binary Artifact**: `dist/niagara-drift.wasm` (366.5 KB, SHA-256: `e99dfd8958f54460...`)  
+> **Binary Artifact**: `dist/niagara-drift.wasm` (373.0 KB, SHA-256: `65767c54e09aebe3...`)  
 
 ## Overview
 

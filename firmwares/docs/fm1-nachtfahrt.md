@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `web/emu/amb_web.c`  
 > **Build Instructions**: `web/emu/build.sh`  
-> **Binary Artifact**: `dist/fm1-nachtfahrt.wasm` (447.1 KB, SHA-256: `f8d621749b4f87c5...`)  
+> **Binary Artifact**: `dist/fm1-nachtfahrt.wasm` (447.4 KB, SHA-256: `5f8e9ab80bdfd7ce...`)  
 
 ## Overview
 

@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `web/emu/loom_web.c`  
 > **Build Instructions**: `web/emu/build.sh`  
-> **Binary Artifact**: `dist/fm1-loom.wasm` (1095.3 KB, SHA-256: `2f77f7f41f6afcd5...`)  
+> **Binary Artifact**: `dist/fm1-loom.wasm` (1095.5 KB, SHA-256: `099e6a1a40e4625c...`)  
 
 ## Overview
 

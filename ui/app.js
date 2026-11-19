@@ -23,6 +23,7 @@ let slots = [];   // a screen each: { n, el, ctx, image, pending, firmware, load
 let selected = 0; // the screen the panel plays
 let query = "";   // what the search box holds
 let builds = [];
+const sounding = new Map(); // a controller's notes held: "channel:note" -> the screen they went to (see playNote)
 
 const cur = () => slots[selected];
 /// A screen whose firmware takes what the panel does: one is loaded there, and it is playing.
@@ -70,14 +71,18 @@ function makeSlots(count) {
 }
 
 function drawSlot(s) {
-  const busy = !!(s.firmware || s.loading);
+  const busy = !!(s.firmware || s.loading || s.waiting);
   s.el.classList.toggle("empty", !busy);
   s.el.classList.toggle("muted", s.muted);
   s.el.classList.toggle("paused", !!s.firmware && s.paused);
   s.el.classList.toggle("selected", s.n === selected);
-  s.name.textContent = s.firmware ? s.firmware.repo : s.loading ? "loading…" : "empty";
+  s.name.textContent = s.firmware ? s.firmware.repo : s.waiting ? s.waiting : s.loading ? "loading…" : "empty";
   s.name.hidden = !busy;
-  s.choose.hidden = busy;
+  // (a firmware from last time, waiting for the click that lets the page make sound: see `restore`)
+  s.choose.hidden = busy && !s.waiting;
+  s.el.classList.toggle("waiting", !!s.waiting);
+  s.choose.classList.toggle("resume", !!s.waiting);
+  s.choose.textContent = s.waiting ? "play" : "choose firmware";
   s.mute.hidden = !s.firmware;
   s.mute.textContent = s.muted ? "unmute" : "mute";
   s.stop.hidden = !s.firmware;
@@ -92,10 +97,12 @@ function drawStage() {
   if (!s) return;
   stageCtx.clearRect(0, 0, 240, 240);
   if (s.firmware) stageCtx.drawImage(s.canvas, 0, 0);
-  const stage = $("stage");
-  stage.classList.toggle("empty", !s.firmware && !s.loading);
+  const stage = $("stage"), choose = $("stage-choose");
+  stage.classList.toggle("empty", !s.firmware && !s.loading && !s.waiting);
   stage.classList.toggle("paused", !!s.firmware && s.paused);
-  $("stage-name").textContent = s.firmware ? s.firmware.repo : s.loading ? "loading…" : "";
+  $("stage-name").textContent = s.firmware ? s.firmware.repo : s.waiting ? s.waiting : s.loading ? "loading…" : "";
+  choose.classList.toggle("resume", !!s.waiting);
+  choose.textContent = s.waiting ? "play" : "choose firmware";
 }
 $("stage-choose").addEventListener("click", () => menu(true));
 
@@ -112,9 +119,11 @@ function select(n) {
   if (n === selected || !slots[n]) return;
   releaseAll();
   selected = n;
+  showHeld();
   slots.forEach(drawSlot);
   showSelected();
   drawBuilds();
+  remember();
 }
 
 /// The panel as the chosen screen's firmware has it: its lights, where its MASTER stands,
@@ -125,7 +134,7 @@ function showSelected() {
   paintLeds();
   document.querySelector("[data-pot]").style.setProperty("--turn", `${-135 + 270 * s.pot / 1023}deg`);
   $("device").classList.toggle("locked", !live(s));
-  $("playing-into").textContent = !s.firmware ? `screen ${s.n + 1} is empty.`
+  $("playing-into").textContent = s.waiting ? `${s.waiting} waits for its play.` : !s.firmware ? `screen ${s.n + 1} is empty.`
     : s.paused ? `${s.firmware.repo} is stopped: press its play.` : `playing ${s.firmware.repo}${s.muted ? " (muted)" : ""}.`;
 }
 
@@ -139,10 +148,70 @@ function paintLeds() {
   for (const [id, elm] of leds) elm.style.setProperty("--led", levels ? (Math.min(1, (levels[id] || 0) / 0.08) ** 2).toFixed(2) : 0);
 }
 
+// ------------------------------------------------------------------ what was on the screens last time
+
+// Each screen's firmware (with its mute and stop), and the chosen screen, kept in this browser so
+// a page opened again loads them again. Written as they change; read once, at start.
+const SESSION = "luka.slots";
+let restored = false; // (until the last visit's firmwares are asked for again, nothing is written over them)
+
+function remember() {
+  if (!restored) return;
+  const kept = slots.map((s) => s.firmware?.id?.startsWith("build:") ? { id: s.firmware.id.slice(6), muted: s.muted, paused: s.paused } : null);
+  try { localStorage.setItem(SESSION, JSON.stringify({ selected, slots: kept })); } catch { /* not kept, then */ }
+}
+
+function lastVisit() {
+  try { const v = JSON.parse(localStorage.getItem(SESSION) ?? "null"); return v && Array.isArray(v.slots) ? v : null; } catch { return null; }
+}
+
+/// The last visit's firmwares, each on its screen again. A browser lets a page make sound only
+/// after a click or key, so where it does not allow it yet, each waits on its screen (its name
+/// and a play button) for the first one, wherever it is (which then also does what it was for).
+function restore() {
+  if (restored || !slots.length || !builds.length) return;
+  const last = lastVisit();
+  const wanted = (last?.slots || []).map((k, n) => {
+    const b = k && slots[n] && builds.find((b) => b.id === k.id && b.playable);
+    return b ? { n, k, name: b.name } : null;
+  }).filter(Boolean);
+  if (!wanted.length) { restored = true; return; }
+  const go = (e) => {
+    if (restored) return;
+    if (e && navigator.userActivation && !navigator.userActivation.isActive) return; // (not a press the browser counts: wait for one)
+    restored = true;
+    removeEventListener("click", go, true);
+    removeEventListener("keydown", go, true);
+    if (e?.target?.closest?.(".resume")) { e.stopPropagation(); e.preventDefault(); } // (a play button's whole job is this)
+    for (const { n, k } of wanted) {
+      const s = slots[n];
+      if (!s.waiting) continue; // (replaced or emptied meanwhile)
+      s.waiting = null;
+      drawSlot(s);
+      send({ type: "start_build", id: k.id, slot: n, muted: !!k.muted, paused: !!k.paused });
+    }
+    drawBuilds();
+    status("Loading what was playing last time…");
+  };
+  // (`loading` too: the list and `target` see the screen as taken by it)
+  for (const { n, k, name } of wanted) Object.assign(slots[n], { waiting: name, loading: `build:${k.id}`, muted: !!k.muted });
+  slots.forEach(drawSlot);
+  if (slots[last.selected]) select(last.selected);
+  showSelected();
+  drawBuilds();
+  const allowed = navigator.userActivation?.hasBeenActive || navigator.getAutoplayPolicy?.("audiocontext") === "allowed";
+  if (allowed) return go();
+  // (click, not pointerdown: on a touch screen the browser counts a press only once it is lifted)
+  addEventListener("click", go, true);
+  addEventListener("keydown", go, true);
+  status("Press play, or anywhere, to load what was playing last time");
+}
+
 function onEvent(e) {
   const slot = e.slot ?? 0, s = slots[slot];
+  if (["started", "stopped", "paused", "muted"].includes(e.type)) queueMicrotask(remember);
   switch (e.type) {
-    case "builds": builds = [...e.builds].sort((x, y) => x.name.localeCompare(y.name, undefined, { sensitivity: "base", numeric: true })); drawBuilds(); break; // a to z
+    case "builds": builds = [...e.builds].sort((x, y) => x.name.localeCompare(y.name, undefined, { sensitivity: "base", numeric: true })); drawBuilds(); restore(); break; // a to z
     case "started":
       if (!s) break;
       Object.assign(s, { firmware: e.firmware, loading: null, muted: !!e.muted, paused: !!e.paused, levels: null });
@@ -161,6 +230,8 @@ function onEvent(e) {
     case "stopped":
       if (!s) break;
       if (slot === selected) releaseAll();
+      for (const [tag, to] of sounding) if (to === slot) sounding.delete(tag); // (its notes went with it)
+      if (slot === selected) showHeld();
       Object.assign(s, { firmware: null, loading: null, muted: false, paused: false, levels: null, pending: null });
       s.ctx.clearRect(0, 0, 240, 240);
       status(e.reason ? `Screen ${slot + 1}: the firmware stopped after ${(e.at_ms / 1000).toFixed(1)} s: ${e.reason}` : `Screen ${slot + 1}: unloaded`, !!e.reason);
@@ -258,7 +329,7 @@ function startCursor() {
 }
 
 function drawBuilds() {
-  const words = query.toLowerCase().split(/s+/).filter(Boolean);
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const shown = shownBuilds = builds.filter((b) => words.every((w) => `${b.name} ${b.repo}`.toLowerCase().includes(w)));
   cursor = Math.max(0, Math.min(cursor, shown.length - 1));
   if (!shown.length) {
@@ -428,6 +499,24 @@ function step(direction) {
   }
 }
 
+/// A controller's note: to the chosen screen's firmware as MIDI (its MIDI IN: the note's own pitch,
+/// in any octave, as a controller plugged into the FM-1 would play it; a firmware without a MIDI IN
+/// gets it as its keys, see native-worklet.js). Its note-off goes where its note-on went, whichever
+/// screen is chosen by then. The panel's key of that pitch (F3..G5, MIDI 53..79) lights while held.
+function playNote({ note, channel = 1, down, velocity }) {
+  const tag = `${channel}:${note}`, to = down ? (live(cur()) ? selected : null) : sounding.get(tag);
+  if (to === null || to === undefined) return;
+  if (down) sounding.set(tag, to); else sounding.delete(tag);
+  const status = (down ? 0x90 : 0x80) | ((channel - 1) & 15);
+  send({ type: "input", slot: to, input: { type: "midi", bytes: [status, note & 127, down ? Math.max(1, velocity | 0) : 0] } });
+  if (to === selected) keys.get(note - 39)?.classList.toggle("held", down);
+}
+/// The keys lit for the chosen screen's held controller notes.
+function showHeld() {
+  for (const k of keys.values()) k.classList.remove("held");
+  for (const [tag, to] of sounding) if (to === selected) keys.get(Number(tag.split(":")[1]) - 39)?.classList.add("held");
+}
+
 /// The Firm button of a controller: the list is closed, it opens (the cursor shown); open, it loads
 /// the cursor's firmware (or unloads it, if it is on a screen) and closes the list. If that could
 /// not be done (no screen free), the list stays, and the status line says why.
@@ -441,8 +530,9 @@ connectMidi({
   button: $("midi"),
   host: {
     labels: knobs.map((k) => k.dataset.label), // (what a controller's knobs can be learned as: the panel's, in order)
-    notes: { offset: -39, range: [14, 40] },   // the keys are F3 (id 14) to G5 (id 40): MIDI note 53 is F3
-    // a note played on a controller: the key goes down (if the firmware takes it) or up, as if clicked
+    // a note played on a controller: to the firmware as MIDI, the pitch it is (see `playNote`)
+    note: playNote,
+    // a learned rule that presses a key or button: as if clicked
     key({ id, down, velocity }) {
       const elm = keys.get(id) || document.querySelector(`[data-key="${id}"]`);
       if (elm && (!down || live(cur()))) press(elm, id, down, velocity);

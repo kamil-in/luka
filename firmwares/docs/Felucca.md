@@ -6,7 +6,7 @@
 > **Interface Family**: `felucca (emulated / felucca_web core)`  
 > **Source Shim**: `web/emu/felucca_web.c (via fmini-1 -DFELUCCA_FMINI_ONLY=0)`  
 > **Build Instructions**: `tools/build.py (firmware); web via felucca_web.c`  
-> **Binary Artifact**: `dist/Felucca.wasm` (787.4 KB, SHA-256: `2981aba4dee2595a...`)  
+> **Binary Artifact**: `dist/Felucca.wasm` (787.4 KB, SHA-256: `35db8a3ca047638f...`)  
 
 ## Overview
 
