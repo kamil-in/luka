@@ -102,13 +102,14 @@ main { flex: 1; display: flex; flex-direction: column; gap: 18px; width: 100%; m
 #stage .choose.resume:hover { background: #f0eee9; border-color: #f0eee9; }
 #side { min-width: 0; display: grid; grid-template-rows: auto auto auto minmax(90px, 1fr); gap: 20px; padding-top: 36px; }
 /* (the chosen screen is empty, or its firmware stopped: nothing on the panel does anything) */
-#device.locked .knobs, #device.locked .buttons, #device.locked #keys { opacity: .3; pointer-events: none; }
+#device.locked:not(.mixing) .knobs, #device.locked .buttons, #device.locked #keys { opacity: .3; pointer-events: none; }
+/* (the mix chosen: the knobs are the mixer's, whatever the firmware; buttons and keys stay with the screen chosen before) */
 @media (max-width: 760px) { #device { grid-template-columns: minmax(0, 1fr); } #side { width: 100%; } #stage { width: 100%; } #side { padding-top: 0; } }
-#slots { display: grid; grid-template-columns: repeat(4, 130px); justify-content: space-between; }
-.slot { margin: 0; padding: 6px; border: var(--line) solid var(--ink); cursor: pointer; min-width: 0; }
+#slots { display: grid; grid-template-columns: repeat(var(--boxes, 4), 100px); justify-content: space-between; }
+.slot { margin: 0; padding: 5px; border: var(--line) solid var(--ink); cursor: pointer; min-width: 0; }
 .slot.selected { border-color: var(--signal); box-shadow: 0 0 0 var(--line) var(--signal); }
 .slot .glass { position: relative; }
-.slot canvas { display: block; margin: 0 auto; width: 115px; height: 115px; image-rendering: pixelated; background: #000; border: 3px solid var(--screen-edge); outline: var(--line) solid var(--screen-out); outline-offset: calc(var(--line) * -1); }
+.slot canvas { display: block; margin: 0 auto; width: 86px; height: 86px; image-rendering: pixelated; background: #000; border: 3px solid var(--screen-edge); outline: var(--line) solid var(--screen-out); outline-offset: calc(var(--line) * -1); }
 .slot.paused canvas { opacity: .45; }
 .slot .choose { position: absolute; inset: 0; margin: auto; width: fit-content; max-width: 90%; height: fit-content; padding: 4px 10px; font-size: 13px; line-height: 1.15; color: #f0eee9; border-color: #f0eee9; }
 .slot .choose:hover { background: #f0eee9; color: #1c1c1c; }
@@ -122,11 +123,17 @@ main { flex: 1; display: flex; flex-direction: column; gap: 18px; width: 100%; m
 .slot .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .slot .name[hidden] { display: none; }
 .slot.empty .name { color: var(--mute); }
-.slot .ctl { display: flex; gap: 10px; min-height: 20px; }
+.slot .ctl { display: flex; gap: 8px; min-height: 20px; }
 .slot .ctl button { font-size: 12px; }
 .slot .ctl button::before, .slot .ctl button::after { content: none; }
 .slot .ctl button[hidden] { display: none; }
 .slot.muted .mute, .slot.paused .run { color: var(--signal); }
+/* the mix chosen: the screen whose firmware the keys and buttons still play, outlined */
+.slot.played { border-style: dashed; border-color: var(--signal); }
+/* the mix: a box like the screens' (its preview the mixer drawn small), no controls under it */
+.slot.mixbox canvas { image-rendering: auto; }
+.slot.mixbox .ctl { display: none; }
+.slot.mixbox .bar { min-height: 20px; }
 
 /* ---------------------------------------------------------------- controls */
 button { font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink); background: none; border: var(--line) solid var(--ink); border-radius: 0; padding: 8px 14px; cursor: pointer; }
@@ -216,7 +223,7 @@ kbd { font: inherit; color: var(--ink); border: 1px solid var(--mute); padding: 
 @media (max-width: 600px) {
   main { padding: 16px 16px 24px; }
   #device { width: 100%; }
-  #slots { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  #slots { grid-template-columns: repeat(var(--boxes, 4), minmax(0, 1fr)); gap: 6px; }
   .slot { padding: 4px; }
   .slot canvas { width: 100%; height: auto; aspect-ratio: 1; }
   .slot .choose { font-size: 11px; padding: 3px 5px; }

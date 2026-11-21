@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `atek303/`  
 > **Build Instructions**: `atek303/build.sh; published build on gh-pages: atek303/play/app.wasm`  
-> **Binary Artifact**: `dist/FM1-Animatek.wasm` (116.6 KB, SHA-256: `b4f00089db63b44a...`)  
+> **Binary Artifact**: `dist/FM1-Animatek.wasm` (131.7 KB, SHA-256: `33ec3f15dae8f5c6...`)  
 
 ## Overview
 

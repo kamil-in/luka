@@ -31,7 +31,7 @@ No install, no account, nothing to download first. Best in **Chrome or Edge** on
 ## Start jamming in a minute
 
 1. **Open** [kamil-in.github.io/luka](https://kamil-in.github.io/luka/).
-2. Click the **menu button** (three lines, top left) to open the list of firmwares. There are 20.
+2. Click the **menu button** (three lines, top left) to open the list of firmwares. There are 32.
 3. Press **load** next to one. It fills the first free screen and starts.
    Some firmwares **play by themselves** the moment they start (the ambient and generative ones); Luka loads those
    **stopped** so they do not surprise you. Press **play** on their screen when you want them.
@@ -92,15 +92,15 @@ first one, the firmware's volume) isn't at zero.
 
 ## What to play
 
-Twenty firmwares from the FM-1 community, each with its own character. A few ideas to start (each description is a
+Thirty-two firmwares from the FM-1 community, each with its own character. A few ideas to start (each description is a
 summary of what that project says about itself; follow the link in [Credits](#credits) for the real thing):
 
 | If you want... | Try |
 |---|---|
-| **Ambient beds and drones** | AMB-1, Niagara Drift, FRASIL (frozen drones with shimmer reverb), Aisling (dream-harp soundscapes), SATIE-1 (Satie-inspired generative piano), GR!MM, Arctic Scream |
-| **Beats and bass** | X0X (a 303 bass synth with 808 and 909 drum machines), FMini-1 (a 4-track groovebox), Melodee (909 drums, a sequencer) |
-| **A lead to play over it** | MONK-1 (a velocity-sensitive monophonic synth that talks), FiMba-1 (an electric kalimba), ZEN-1 (koto, shakuhachi, erhu, with microtones), S1Vave and OberVave (analogue-modelling synths) |
-| **Something to wander through** | Nachtfahrt (a Berlin-school night drive), Loom (a generative pattern weaver), Mutable Dreams (over 50 oscillator models), CoralFlower (a live arpeggiator), Skiff (a modular patch environment) |
+| **Ambient beds and drones** | AMB-1, Niagara Drift, FRASIL (frozen drones with shimmer reverb), Aisling (dream-harp soundscapes), SATIE-1 (Satie-inspired generative piano), GR!MM, Arctic Scream, Demake (an ambient lofi machine on pedal recordings) |
+| **Beats and bass** | X0X (a 303 bass synth with 808 and 909 drum machines), FMini-1 (a 4-track groovebox), Melodee (909 drums, a sequencer), ATEK 303, LOAF BREAKER (hardcore kicks and chopped breaks), PERF-1 (a groovebox that plays itself while you steer it), JAMTRACK (a backing band that follows your chords) |
+| **A lead to play over it** | MONK-1 (a velocity-sensitive monophonic synth that talks), FiMba-1 (an electric kalimba), ZEN-1 (koto, shakuhachi, erhu, with microtones), S1Vave and OberVave (analogue-modelling synths), OG Synth, JIANT, Golana, M-PYRE (a rock and metal riffbox with guitar samples), Chimera Vocal (a singing human voice) |
+| **Something to wander through** | Nachtfahrt (a Berlin-school night drive), Loom (a generative pattern weaver), Mutable Dreams (over 50 oscillator models), CoralFlower (a live arpeggiator), Skiff (a modular patch environment), Blop (one-finger chords and an aquarium), viscera (a four-track tape looper) |
 
 <details>
 <summary><b>Jam recipes</b></summary>
@@ -178,29 +178,43 @@ manuals, and support them.
 
 | Firmware | Author | Licence | Project |
 |---|---|---|---|
-| AMB-1 | Charles Vestal | MPL-2.0 | [charlesvestal/fm1-amb](https://github.com/charlesvestal/fm1-amb) |
 | Aisling | Stephen Cummins | GPL-3.0 | [stephencummins/fm1-aisling](https://github.com/stephencummins/fm1-aisling) |
+| AMB-1 | Charles Vestal | MPL-2.0 | [charlesvestal/fm1-amb](https://github.com/charlesvestal/fm1-amb) |
 | Arctic Scream | PolarPatch | GPL-3.0 | [PolarPatch/Arctic-scream-FM-1](https://github.com/PolarPatch/Arctic-scream-FM-1) |
+| ATEK 303 | animatek | GPL-3.0 | [animatek/FM1-Animatek](https://github.com/animatek/FM1-Animatek) |
+| Blop | Obsimo | GPL-3.0 | [OSR-Experiment/OSR-1](https://github.com/OSR-Experiment/OSR-1) |
+| Chimera Vocal | Shan-Sherif (a port of Jameson Hodge's CHIMERA) | MIT / MPL-2.0 / GPL-3.0 (per file) | [shan-sherif/fm-1-chimera-vocal](https://github.com/shan-sherif/fm-1-chimera-vocal) |
 | CoralFlower | FicusFicusov | GPL-3.0 | [FicusFicusov/CoralFlower](https://github.com/FicusFicusov/CoralFlower) |
+| Demake | Iñigo Hernández | GPL-3.0 | [InigoHernandez/demake-synth](https://github.com/InigoHernandez/demake-synth) |
 | FiMba-1 | J. Adam Sowers | GPL-3.0 | [jadamsowers/fm1-fimba](https://github.com/jadamsowers/fm1-fimba) |
 | FMini-1 | Leo Kuroshita ([@kurogedelic](https://github.com/kurogedelic)), Hügelton Instruments | GPL-3.0 | [ruppert/fmini-1](https://github.com/ruppert/fmini-1) |
 | FRASIL | Styves Goupil | MPL-2.0 / GPL-3.0 | [styvesgoupil/frasil](https://github.com/styvesgoupil/frasil) |
+| Golana | Gadlele | GPL-3.0 | [Gadlele/Golana](https://github.com/Gadlele/Golana) |
 | GR!MM | GRiMMBIENT | GPL-3.0 | [GRiMMBIENT/grimm](https://github.com/GRiMMBIENT/grimm) |
+| JAMTRACK | PhilipsKnobs | MIT | [Philip-Bos/jamtrack-fm1](https://github.com/Philip-Bos/jamtrack-fm1) |
+| JIANT | juanjiant-bit | GPL-3.0 | [juanjiant-bit/JIANT](https://github.com/juanjiant-bit/JIANT) |
+| LOAF BREAKER | FLEXOR | MPL-2.0 | [FLEXOR-R/loaf-breaker](https://github.com/FLEXOR-R/loaf-breaker) |
 | Loom | Charles Vestal | GPL-3.0 | [charlesvestal/fm1-loom](https://github.com/charlesvestal/fm1-loom) |
+| M-PYRE | History Of Sky | GPL-3.0 | [HistoryOfSky/m-pyre](https://github.com/HistoryOfSky/m-pyre) |
 | Melodee | Kerem Kilic ([@keremimo](https://github.com/keremimo)) | GPL-3.0 | [keremimo/melodee](https://github.com/keremimo/melodee) |
 | MONK-1 | Charles Vestal | GPL-3.0 | [charlesvestal/fm1-monk](https://github.com/charlesvestal/fm1-monk) |
 | Mutable Dreams | Henri David (kidbee85) | GPL-3.0 / MPL-2.0 | [kidbee85-beep/mutable-dreams](https://github.com/kidbee85-beep/mutable-dreams) |
 | Nachtfahrt | FartyPants | GPL-3.0 | [FartyPants/fm1-nachtfahrt](https://github.com/FartyPants/fm1-nachtfahrt) |
 | Niagara Drift (OMNI) | Evan Yerburgh | GPL-3.0 | [evanyerburgh/niagara-drift](https://github.com/evanyerburgh/niagara-drift) |
 | OberVave | Zvenson | GPL-3.0 | [zvenson/obervave](https://github.com/zvenson/obervave) |
+| OG Synth | Mike Johnson Beats | MPL-2.0 | [mikejohnsonbeats/OG-Synth-source](https://github.com/mikejohnsonbeats/OG-Synth-source) |
+| PERF-1 | deamonSLINKY | GPL-3.0 | [deamonSLINKY/PERF-1](https://github.com/deamonSLINKY/PERF-1) |
 | S1Vave | AndrewGG88 | GPL-3.0 | [AndrewGG88/S1Vave](https://github.com/AndrewGG88/S1Vave) |
 | SATIE-1 | OCKM STUDIO | GPL-3.0 | [OCKM-STUDIO/SATIE-1](https://github.com/OCKM-STUDIO/SATIE-1) |
 | Skiff | illuminus5 | GPL-3.0 | [illuminus5/skiff](https://github.com/illuminus5/skiff) |
+| viscera | De-Pattern | GPL-3.0 | [De-Pattern/viscera](https://github.com/De-Pattern/viscera) |
 | X0X | Charles Vestal | GPL-3.0 | [charlesvestal/fm1-x0x](https://github.com/charlesvestal/fm1-x0x) |
 | ZEN-1 | aceyprime | GPL-3.0 | [aceyprime/zen-1](https://github.com/aceyprime/zen-1) |
 
 Author names and licences are as recorded when the builds were imported; each project's own page is the authority.
-Two more projects are used for development and testing and are not in the list in the app:
+**SLOOP 3** by isod89 (GPL-3.0, [isod89/sloop3-fm1](https://github.com/isod89/sloop3-fm1)) and **JamesOS** by Aaron Grando
+(GPL-3.0, [aarongrando/JamesOS](https://github.com/aarongrando/JamesOS)) are followed too, but publish no browser build yet, so
+they are not in the app. Two more projects are used for development and testing and are not in the list in the app:
 **Felucca** by Hügelton Instruments (GPL-3.0, [hugelton/Felucca](https://github.com/hugelton/Felucca)), the 4-track FM firmware
 that Skiff is based on, and whose packages Luka's emulator was tested against.
 

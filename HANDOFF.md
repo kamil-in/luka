@@ -275,6 +275,64 @@ Open questions for the owner: the keys' bottom edge versus the stage's at small 
 the spacing, or give the stage a larger minimum); whether 546 px of right column is too wide for
 laptops (the stage gives up the width, 404 px at 1024).
 
+## Five more repos, two new adapters, all updated (2026-11-21)
+
+35 repos are followed now; **32 builds play in the app** (Felucca stays emulated; SLOOP 3 and JamesOS
+publish no browser build). The full build (`firmwares/build-all.cmd`, then `node tools/import-builds.mjs`)
+was run: every repo fetched and fast-forwarded.
+
+- **Chimera Vocal** (shan-sherif/fm-1-chimera-vocal): fm1-base, plays as `x0x`; build from its Pages
+  (`emu/app.wasm`).
+- **Demake** (InigoHernandez/demake-synth): new family `demake` (class `Demake` in `native-worklet.js`):
+  `w_*` names, 4-bit screen through a 16-colour palette, LEDs 41 levels (keys, buttons by label),
+  MASTER as the page's output gain (as its own page), 64 KiB store given back before `w_init`, saved
+  when `w_store_gen` moves. Build committed in its repo (`web/dmk.wasm`).
+- **viscera** (De-Pattern/viscera): new family `viscera` (class `Viscera`): a tape looper.
+  `control(keys, buttons, 7 encoder deltas, ms)` in this panel's own ids, called on every input and
+  every 50 ms; it asks the host to keep/give back projects in 8 slots (kept here with its device
+  settings as one save). **It records from a live input; Luka gives it none yet** (render(0)), so it
+  plays only what it makes itself. Build from its site (newer than the repo's `site/emulator/` copy).
+- **SLOOP 3** (isod89/sloop3-fm1) and **JamesOS** (aarongrando/JamesOS): cloned, updated and documented,
+  not playable: SLOOP 3's page is only an installer, JamesOS has an installer and an editor. Their
+  `.fwsc` packages could play through the Rust emulator path (not reachable from the page today).
+- M-PYRE's path became the general "own path" (`OWN` in `native-worklet.js`: `startOwn`, a class
+  per style with `NEEDS`, `render`, `input`, `screen` -> `{fb, swap}` or `{rgba}`, `levels`,
+  `stored`, `due`, `restored`, optional `midi`). `playsMidiNotes` also knows `w_midi` and `midi`.
+- **Arctic Scream 2.1** renamed its build: `gh-pages:arctic.wasm` (was `grimm.wasm`); same
+  `asyncify` interface. The extractor kept the old copy and warned until fixed.
+- Checked: all 32 in Node (start, screen, LEDs; MIDI 21 + Demake take notes); the three new screens
+  looked at; Demake's and viscera's saves round-trip in Node; the three on the page together at
+  under 1 % load, 1 late block in 4041. Not listened to. READMEs (root: counts, "what to play",
+  credits now all 32; `firmwares/README.md`: table and counts) updated.
+
+## The mix: a fifth box, volumes and effects (2026-11-21)
+
+- **Page:** a fifth box "mix" after the four screens (all five 100 px, previews 86 px; at phone
+  width they share it). Chosen (click, key 5, or a controller's left/right, which now stops there
+  too), the eight knobs are the mixer's: **top four vol 1-4, below master (leftmost), filter,
+  delay, reverb**; labels and dials change, the stage draws the mixer (strips, live meters,
+  values). Keys and buttons stay with the screen chosen before (dashed orange outline); keys 1-4
+  go back. Empty screens say "choose" (the stage keeps "choose firmware"). Kept in
+  `localStorage["luka.mix"]`.
+- **Same MIDI knobs, other job:** `host.knob(i)` and the mouse/wheel go through one path that asks
+  `mixing`. **Pickup** (`ui/mixer.js` `createPickup`): a knob that sends positions (0..127) takes
+  over a value only once it passes it (or is within 3/127), for the mix and for a firmware's
+  MASTER alike; any switch of screen or mix forgets the knobs' positions. Endless knobs never wait.
+- **Sound** (`ui/web/mixbus.js`): each slot's mute gain -> a strip (volume, kept per slot whatever
+  plays in it) -> meter; strips -> low-pass -> high-pass -> master -> limiter (compressor at -2 dB,
+  20:1, 2 ms) -> speakers, with delay (375 ms, feedback 0.45 through a 3.5 kHz low-pass) and reverb
+  (a 2.4 s impulse made in code) as sends after the filters. Volumes and master are v*v (1 = as
+  before the mixer). Filter -1..1: low-pass 20 kHz -> 120 Hz left, high-pass 20 Hz -> 6 kHz right,
+  stopping at off on the way through. Transport commands `{type:"mix", slot, volume}` and
+  `{type:"fx", master?, filter?, delay?, reverb?}`; `connected.levels()`, `connected.bus()`.
+  `connected.mixer` tells the page the transport has one (the Tauri one does not: no mix box).
+- **Checked:** `tests/mixer/mixer.test.mjs` (9); in the preview pane at 1024x768 and 375 px: boxes
+  measured, knobs routed (wheel), every control read back from its audio node (gain 0.56 for 0.75,
+  2.58 kHz for low-pass 40 %, high-pass 6 kHz at full right), meters live, load 2 % with two
+  firmwares (3 late of 1921 blocks, as before). **Not listened to**: effect amounts, the limiter
+  and the reverb's sound are the owner's to judge. Not tried with a controller (pickup is tested in
+  Node only). Dark theme only on screen (the mixer view is drawn on the black screen either way).
+
 ## MIDI controller notes (2026-11-19, owner reported wrong notes)
 
 - **Cause:** every note outside F3..G5 was folded onto the panel keys on its own (`fold: 12`), so on

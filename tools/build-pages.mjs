@@ -94,6 +94,7 @@ const html = readFileSync(indexFile, "utf8");
 const sheet = '  <link rel="stylesheet" href="style.css">';
 if (!html.includes(sheet)) throw new Error("index.html changed: the hints have nowhere to go");
 const hints = `  <link rel="modulepreload" href="web/transport-web.js">
+  <link rel="modulepreload" href="web/mixbus.js">
   <link rel="preload" as="fetch" crossorigin href="native/manifest.json">
   <meta name="luka-sw" content="sw.js">
 `;

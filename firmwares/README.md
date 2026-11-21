@@ -1,6 +1,6 @@
 # FM-1 Community Firmwares Automation & Interface Documentation
 
-This directory contains the automated single-click tooling to clone, update, build, and document all 30 community firmwares for the M-VAVE FM-1 pocket synthesizer.
+This directory contains the automated single-click tooling to clone, update, build, and document all 35 community firmwares for the M-VAVE FM-1 pocket synthesizer.
 
 ## Single-Click Execution
 
@@ -17,11 +17,11 @@ You can run the entire workflow in **one click**:
 
 ### What the Script Does Automatically
 
-1. **Clones & Updates**: Loops through all 30 community repositories, clones any missing ones, fetches every branch (some builds come from `gh-pages`), switches to each repository's own default branch and fast-forwards it.
+1. **Clones & Updates**: Loops through all 35 community repositories, clones any missing ones, fetches every branch (some builds come from `gh-pages`), switches to each repository's own default branch and fast-forwards it.
 2. **Generates / Retrieves Native Web WASM**:
    - Executes repo build instructions if compilation tools (`emcc`, `clang`, `wasi-sdk`, `zig`) are installed on the host.
    - Reliably extracts and verifies the official native web WebAssembly artifact produced by the repo's instructions (from repository paths, build branches, or release artifacts).
-   - Places all 30 output WASM binaries in `firmwares/dist/`.
+   - Places all 33 output WASM binaries in `firmwares/dist/`.
 3. **Generates Full Interface Documentation**:
    - Dynamically reflects exported and imported WebAssembly functions from each binary.
    - Generates individual specification documents in `firmwares/docs/<firmware>.md`.
@@ -30,7 +30,7 @@ You can run the entire workflow in **one click**:
 
 ---
 
-## Repositories Covered (30 Firmwares)
+## Repositories Covered (35 Firmwares)
 
 | Firmware | Repository | Branch | Interface Style |
 | :--- | :--- | :--- | :--- |
@@ -64,6 +64,11 @@ You can run the entire workflow in **one click**:
 | **JAMTRACK** | [Philip-Bos/jamtrack-fm1](https://github.com/Philip-Bos/jamtrack-fm1) | `main` | `x0x` |
 | **PERF-1** | [deamonSLINKY/PERF-1](https://github.com/deamonSLINKY/PERF-1) | `main` | `x0x` |
 | **M-PYRE** | [HistoryOfSky/m-pyre](https://github.com/HistoryOfSky/m-pyre) | `main` | `mpyre` |
+| **Chimera Vocal** | [shan-sherif/fm-1-chimera-vocal](https://github.com/shan-sherif/fm-1-chimera-vocal) | `main` | `x0x` |
+| **Demake** | [InigoHernandez/demake-synth](https://github.com/InigoHernandez/demake-synth) | `main` | `demake` |
+| **viscera** | [De-Pattern/viscera](https://github.com/De-Pattern/viscera) | `main` | `viscera` |
+| **SLOOP 3** | [isod89/sloop3-fm1](https://github.com/isod89/sloop3-fm1) | `main` | none (no browser build) |
+| **JamesOS** | [aarongrando/JamesOS](https://github.com/aarongrando/JamesOS) | `main` | none (no browser build) |
 
 ---
 
@@ -75,9 +80,9 @@ firmwares/
 ├── build-firmwares.ps1           # Main PowerShell automation script
 ├── extract-artifacts.mjs         # Verified WASM artifact extraction & retrieval
 ├── generate-interface-docs.mjs   # WebAssembly reflection & markdown generator
-├── INTERFACES.md                 # Master interface specification and comparison catalog (30 firmwares)
+├── INTERFACES.md                 # Master interface specification and comparison catalog (35 firmwares)
 ├── README.md                     # This documentation
-├── docs/                         # Detailed interface specifications for all 30 firmwares
+├── docs/                         # Detailed interface specifications for all 35 firmwares
 │   ├── Arctic-scream-FM-1.md
 │   ├── CoralFlower.md
 │   ├── Felucca.md
@@ -100,7 +105,7 @@ firmwares/
 │   ├── skiff.md
 │   └── zen-1.md
 ├── dist/                         # Web native WASM binaries & machine-readable manifest
-│   ├── *.wasm (30 binaries)
+│   ├── *.wasm (33 binaries)
 │   └── manifest.json
 └── [cloned repositories: 21 firmware source repos]
 ```

@@ -6,7 +6,7 @@
 > **Interface Family**: `asyncify`  
 > **Source Shim**: `firmware/src/fm1_web.c`  
 > **Build Instructions**: `web/build_web.sh`  
-> **Binary Artifact**: `dist/Arctic-scream-FM-1.wasm` (636.0 KB, SHA-256: `76d6b7e16265367f...`)  
+> **Binary Artifact**: `dist/Arctic-scream-FM-1.wasm` (654.9 KB, SHA-256: `e51c86e98cfcdf56...`)  
 
 ## Overview
 

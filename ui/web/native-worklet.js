@@ -36,6 +36,8 @@
 //              author's page inlines it; tools carry it here as the wasm's custom section
 //              "luka.pack"), and its songs as five projects (four SAVE slots, the working one).
 //              It has its own small path: see `Mpyre` below.
+//   "demake"   demake's (web/dmk_web.c): see `Demake` below.
+//   "viscera"  viscera's tape looper (its site's emulator): see `Viscera` below.
 //
 // They differ in names more than in kind, so there is one adapter, which asks a build what
 // it has (`pick`); `style` (ui/web/native-kinds.js) only settles the few things that differ.
@@ -116,7 +118,9 @@ class Mpyre {
   static UI_EVERY = 705.6; // frames between UI steps: 16 ms at 44.1 kHz
   static KEEP_EVERY = 5;   // seconds between looks at the songs
 
-  constructor(module, x) {
+  static NEEDS = ["emu_init", "emu_render", "emu_block_frames", "emu_ui", "emu_screen", "emu_keys", "emu_button", "emu_knob", "emu_buffer"];
+
+  constructor(module, x, save) {
     this.x = x;
     x.emu_init();
     const pack = WebAssembly.Module.customSections(module, "luka.pack")[0];
@@ -140,6 +144,9 @@ class Mpyre {
     this.ledKey = "";
     this.kept = null;    // the songs as last saved
     this.keptAt = 0;
+    if (!this.hasPack) throw new Error("this M-PYRE build came without its sound pack: import it again (tools/import-builds.mjs)");
+    this.restored = !!save && this.restore(save);
+    if (x.emu_volume) x.emu_volume(Math.round(800 * 4096 / 1023));
   }
 
   /// `n` frames into the two channels; the UI steps as their time comes.
@@ -183,11 +190,11 @@ class Mpyre {
     else if (i.type === "analog" && i.channel === 4) x.emu_volume(Math.round(i.value * 4096 / 1023));
   }
 
-  /// The screen when a UI step drew it (null: unchanged).
+  /// The screen when a UI step drew it (null: unchanged), in the panel's byte order.
   screen() {
     if (!this.drawn) return null;
     this.drawn = false;
-    return new Uint16Array(this.x.memory.buffer, this.x.emu_screen(), 240 * 240);
+    return { fb: new Uint16Array(this.x.memory.buffer, this.x.emu_screen(), 240 * 240), swap: true };
   }
 
   /// The lights as our levels when they changed (null: unchanged). Keys: lit, dim, faint;
@@ -239,6 +246,236 @@ class Mpyre {
     return first ? null : bytes; // (what it started with is not a change)
   }
 }
+
+/// demake's build (web/dmk_web.c in its repository, as its web/worklet.js drives it): w_* names,
+/// felucca's labels and roles (MASTER is not the firmware's: its page turns the output down, and so
+/// does this), 128 frames of 16-bit stereo a render, the screen as 4 bits a pixel through a
+/// 16-colour palette, the lights as 41 levels (keys, then buttons by label), the songs and sounds as
+/// a 64 KiB store given back before init.
+class Demake {
+  static NEEDS = ["w_init", "w_render", "w_audio", "w_frame", "w_palette", "w_leds", "w_key", "w_button", "w_encoder", "w_store", "w_store_gen"];
+  static STORE = 65536;
+
+  constructor(_module, x, save, now) {
+    this.x = x;
+    this.now = now;
+    this.restored = false;
+    if (save && save.length === Demake.STORE) { new Uint8Array(x.memory.buffer, x.w_store(), Demake.STORE).set(save); this.restored = true; }
+    x.w_init((Math.random() * 4294967296) >>> 0);
+    if (x.w_latency) x.w_latency(Math.round(0.06 * 44100) + 128); // (key to sound heard: its recording takes it off)
+    this.gen = x.w_store_gen();
+    this.gain = 800 / 1023;
+    this.ledKey = "";
+    this.rgba = new Uint8ClampedArray(240 * 240 * 4);
+    this.midi = x.w_midi ? (s, a, b) => x.w_midi(s, a, b) : null;
+  }
+
+  render(left, right) {
+    const x = this.x;
+    for (let at = 0; at < left.length; at += 128) {
+      x.w_render();
+      const a = new Int16Array(x.memory.buffer, x.w_audio(), 256), g = this.gain / 32768, n = Math.min(128, left.length - at);
+      for (let i = 0; i < n; i++) {
+        left[at + i] = a[2 * i] * g;
+        if (right) right[at + i] = a[2 * i + 1] * g;
+      }
+    }
+    if (x.w_midi_take) for (let k = 0; k < 64 && x.w_midi_take() >= 0; k++); // (its MIDI out: nowhere to go here)
+  }
+
+  input(i) {
+    const x = this.x;
+    if (i.type === "key") { if (i.id >= 14) x.w_key(i.id - 14, i.down ? 1 : 0); else x.w_button(label(i.id), i.down ? 1 : 0); }
+    else if (i.type === "encoder") x.w_encoder(role(i.id), i.clicks | 0);
+    else if (i.type === "analog" && i.channel === 4) this.gain = i.value / 1023;
+  }
+
+  /// The screen, drawn now (its animations need the time), as RGBA.
+  screen() {
+    const x = this.x, mem = x.memory.buffer;
+    const fb = new Uint8Array(mem, x.w_frame(this.now() >>> 0), 28800), pal = new Uint32Array(mem, x.w_palette(), 16), d = this.rgba;
+    for (let p = 0; p < 240 * 240; p++) {
+      const c = pal[p & 1 ? fb[p >> 1] & 15 : fb[p >> 1] >> 4], o = 4 * p;
+      d[o] = c >> 16; d[o + 1] = (c >> 8) & 255; d[o + 2] = c & 255; d[o + 3] = 255;
+    }
+    return { rgba: d.slice() };
+  }
+
+  levels() {
+    const l = new Uint8Array(this.x.memory.buffer, this.x.w_leds(), 41), key = l.join();
+    if (key === this.ledKey) return null;
+    this.ledKey = key;
+    const levels = new Array(41).fill(0);
+    for (let id = 0; id < 14; id++) levels[id] = l[27 + label(id)] / 255 * LIT;
+    for (let k = 0; k < 27; k++) levels[14 + k] = l[k] / 255 * LIT;
+    return levels;
+  }
+
+  stored() { return new Uint8Array(this.x.memory.buffer, this.x.w_store(), Demake.STORE).slice(); }
+
+  /// The store after a save (null: none since the last look).
+  due() {
+    const g = this.x.w_store_gen();
+    if (g === this.gen) return null;
+    this.gen = g;
+    return this.stored();
+  }
+}
+
+/// viscera's build (its site's emulator/worklet.js): a four-track tape looper. control(keys,
+/// buttons, seven encoder deltas, ms) takes the whole panel at once, in this panel's own ids
+/// (buttons OCT- OCT+ FX .. REC, encoders SELECT, ALGORITHM, KNOB 1..4, PRESETS), and is called
+/// every 50 ms too (held buttons' timings move on); the screen is drawn on asking, RGB565 in the
+/// host's byte order; the lights 41 (buttons, then keys: 2 lit, 1 glow). It records from a live
+/// input this page does not give it, so here it plays what it has. MASTER is the page's (output
+/// gain), as on its own page. It keeps its own settings (a device blob) and asks the host to keep
+/// and give back projects in eight slots: all of them are kept here as one save.
+class Viscera {
+  static NEEDS = ["init", "control", "paint", "screen", "leds", "render", "output_buffer", "device", "device_bytes", "device_changed", "device_seal",
+    "device_check", "project", "project_bytes", "project_seal", "project_check", "stop_all", "slot_info", "name_buffer", "set_host", "host_arg"];
+  static SLOTS = 8;
+
+  constructor(_module, x, save, now) {
+    this.x = x;
+    this.now = now;
+    x.init();
+    if (x.intro) x.intro(0);
+    this.keys = this.buttons = 0;
+    this.enc = new Int32Array(7);
+    this.gain = 0.8 * 0.8 * 1.4;
+    this.projects = new Array(Viscera.SLOTS).fill(null);
+    this.ledKey = "";
+    this.lastControl = 0;
+    this.restored = !!save && this.restore(save);
+    this.devGen = x.device_changed();
+    this.dirty = false;
+    x.set_host(0, 0, 0); // (no live input here)
+    this.tellSlots();
+    this.midi = x.midi ? (s, a, b) => x.midi(s, a, b) : null;
+  }
+
+  tellSlots() {
+    const x = this.x;
+    for (let s = 0; s < Viscera.SLOTS; s++) {
+      const name = this.projects[s] ? `PROJECT ${s + 1}` : "", b = new Uint8Array(x.memory.buffer, x.name_buffer(), 16);
+      b.fill(0);
+      for (let i = 0; i < Math.min(11, name.length); i++) b[i] = name.charCodeAt(i) & 127;
+      x.slot_info(s, this.projects[s] ? 1 : 0, x.name_buffer());
+    }
+  }
+
+  /// The panel as it is now, and what changed in it, to the firmware; its asks answered.
+  control() {
+    const x = this.x, e = this.enc, now = this.now() >>> 0;
+    const req = x.control(this.keys >>> 0, this.buttons >>> 0, e[0], e[1], e[2], e[3], e[4], e[5], e[6], now);
+    e.fill(0);
+    this.lastControl = now;
+    if (req === 1) { // keep a project
+      const slot = x.host_arg();
+      if (slot >= 0 && slot < Viscera.SLOTS) {
+        x.project_seal(slot);
+        this.projects[slot] = new Uint8Array(x.memory.buffer, x.project(), x.project_bytes()).slice();
+        this.dirty = true;
+        this.tellSlots();
+      }
+    } else if (req === 2) { // give one back
+      const p = this.projects[x.host_arg()];
+      if (p) this.load(p);
+    }
+  }
+
+  load(bytes) {
+    const x = this.x, p = new Uint8Array(x.memory.buffer, x.project(), x.project_bytes());
+    if (bytes.length > p.length) return false;
+    const keep = p.slice();
+    x.stop_all(); p.fill(0); p.set(bytes);
+    if (x.project_check() === 1) return true;
+    p.set(keep);
+    return false;
+  }
+
+  render(left, right) {
+    const x = this.x;
+    if (this.now() - this.lastControl >= 50) this.control();
+    for (let at = 0; at < left.length; at += 128) {
+      x.render(0);
+      const o = new Float32Array(x.memory.buffer, x.output_buffer(), 256), g = this.gain, n = Math.min(128, left.length - at);
+      for (let i = 0; i < n; i++) {
+        left[at + i] = o[2 * i] * g;
+        if (right) right[at + i] = o[2 * i + 1] * g;
+      }
+    }
+  }
+
+  input(i) {
+    if (i.type === "key") {
+      const bit = 1 << (i.id >= 14 ? i.id - 14 : i.id);
+      if (i.id >= 14) this.keys = i.down ? this.keys | bit : this.keys & ~bit;
+      else this.buttons = i.down ? this.buttons | bit : this.buttons & ~bit;
+    } else if (i.type === "encoder") { if (i.id >= 0 && i.id < 7) this.enc[i.id] += i.clicks | 0; }
+    else if (i.type === "analog" && i.channel === 4) { const v = i.value / 1023; this.gain = v * v * 1.4; return; }
+    else return;
+    this.control();
+  }
+
+  screen() {
+    const x = this.x;
+    x.paint(this.now() >>> 0);
+    return { fb: new Uint16Array(x.memory.buffer, x.screen(), 240 * 240), swap: false };
+  }
+
+  levels() {
+    const l = new Uint8Array(this.x.memory.buffer, this.x.leds(), 41), key = l.join();
+    if (key === this.ledKey) return null;
+    this.ledKey = key;
+    const of = (v) => (v === 2 ? LIT : v === 1 ? DIM : 0);
+    const levels = new Array(41).fill(0);
+    for (let id = 0; id < 14; id++) levels[id] = of(l[id]);
+    for (let k = 0; k < 27; k++) levels[14 + k] = of(l[14 + k]);
+    return levels;
+  }
+
+  /// Its settings, then the eight projects: each a length (4 bytes, 0: none) and its bytes.
+  stored() {
+    const x = this.x;
+    x.device_seal();
+    const parts = [new Uint8Array(x.memory.buffer, x.device(), x.device_bytes()).slice(), ...this.projects.map((p) => p || new Uint8Array(0))];
+    const out = new Uint8Array(parts.reduce((a, p) => a + 4 + p.length, 0)), view = new DataView(out.buffer);
+    let at = 0;
+    for (const p of parts) { view.setUint32(at, p.length, true); out.set(p, at + 4); at += 4 + p.length; }
+    return out;
+  }
+
+  restore(save) {
+    const x = this.x, view = new DataView(save.buffer, save.byteOffset, save.byteLength), parts = [];
+    for (let at = 0; at + 4 <= save.length;) {
+      const n = view.getUint32(at, true);
+      if (at + 4 + n > save.length) return false;
+      parts.push(save.subarray(at + 4, at + 4 + n));
+      at += 4 + n;
+    }
+    if (parts.length !== 1 + Viscera.SLOTS) return false;
+    const d = new Uint8Array(x.memory.buffer, x.device(), x.device_bytes());
+    if (parts[0].length && parts[0].length <= d.length) {
+      const keep = d.slice(); d.fill(0); d.set(parts[0]);
+      if (x.device_check() !== 1) d.set(keep);
+    }
+    parts.slice(1).forEach((p, s) => { this.projects[s] = p.length ? p.slice() : null; });
+    return true;
+  }
+
+  /// Its settings or a project changed since the last look: all of it, to keep (null: nothing).
+  due() {
+    const g = this.x.device_changed();
+    if (g !== this.devGen) { this.devGen = g; this.dirty = true; }
+    if (!this.dirty) return null;
+    this.dirty = false;
+    return this.stored();
+  }
+}
+
+/// The builds with a path of their own (not the shared adapter below), by style.
+const OWN = { mpyre: Mpyre, demake: Demake, viscera: Viscera };
 
 class Native extends AudioWorkletProcessor {
   constructor() {
@@ -381,7 +618,8 @@ class Native extends AudioWorkletProcessor {
 
   stop(tell) {
     if (!this.x) return;
-    if (this.mp) { const bytes = this.mp.stored(); if (!this.mp.kept || bytes.some((b, i) => b !== this.mp.kept[i]) || bytes.length !== this.mp.kept.length) this.port.postMessage({ type: "save", sha256: this.saveKey, bytes }); }
+    if (this.mp instanceof Mpyre) { const bytes = this.mp.stored(); if (!this.mp.kept || bytes.some((b, i) => b !== this.mp.kept[i]) || bytes.length !== this.mp.kept.length) this.port.postMessage({ type: "save", sha256: this.saveKey, bytes }); }
+    else if (this.mp) { const bytes = this.mp.due(currentTime); if (bytes) this.port.postMessage({ type: "save", sha256: this.saveKey, bytes }); } // (only what changed since the last save)
     else if (this.writes !== this.saved) this.keep();
     const at_ms = this.now();
     this.x = null;
@@ -395,7 +633,7 @@ class Native extends AudioWorkletProcessor {
         this.mp = null;
         this.noteKeys = null;
         this.notesAsKeys = data.midiNotes === false; // (its MIDI IN takes no notes: a controller's go to its keys)
-        if (data.style === "mpyre") { this.startMpyre(data); break; }
+        if (OWN[data.style]) { this.startOwn(data, OWN[data.style]); break; }
         if (!["felucca", "x0x", "melodee", "sim", "asyncify", "coralflower"].includes(data.style)) throw new Error(`no adapter for a "${data.style}" build`);
         const sim = data.style === "sim", asy = data.style === "asyncify", cf = data.style === "coralflower", ids = sim || asy || data.style === "melodee"; // (ids: this panel's own, as they are)
         // (whatever a build asks of its host, it gets a function that does nothing)
@@ -483,23 +721,22 @@ class Native extends AudioWorkletProcessor {
     }
   }
 
-  startMpyre(data) {
+  /// A build with a path of its own (OWN): made, given its save, started.
+  startOwn(data, Own) {
     const module = new WebAssembly.Module(data.wasm), imports = {};
     for (const i of WebAssembly.Module.imports(module)) if (i.kind === "function") (imports[i.module] ??= {})[i.name] = () => 0;
     const x = new WebAssembly.Instance(module, imports).exports;
-    for (const need of ["emu_init", "emu_render", "emu_block_frames", "emu_ui", "emu_screen", "emu_keys", "emu_button", "emu_knob", "emu_buffer"])
+    for (const need of Own.NEEDS)
       if (typeof x[need] !== "function") throw new Error(`this build has no ${need}: it is not of the kind expected`);
     if (x._initialize) x._initialize();
-    const mp = new Mpyre(module, x);
-    if (!mp.hasPack) throw new Error("this M-PYRE build came without its sound pack: import it again (tools/import-builds.mjs)");
-    const restored = !!data.save && mp.restore(data.save);
-    if (x.emu_volume) x.emu_volume(Math.round(800 * 4096 / 1023));
+    this.idle = 0;
+    this.paused = false;
+    this.now = () => Math.round((currentTime - this.idle) * 1000);
+    const mp = new Own(module, x, data.save || null, () => this.now());
+    const restored = !!mp.restored;
     this.x = x;
     this.mp = mp;
     this.saveKey = data.sha256;
-    this.now = () => Math.round((currentTime - this.idle) * 1000);
-    this.idle = 0;
-    this.paused = false;
     this.hold(!!data.paused);
     const rate = x.emu_rate ? x.emu_rate() : 44100;
     const info = { identity: "browser build", board: "fm1", sample_rate: rate, screen_width: 240, screen_height: 240 };
@@ -518,16 +755,20 @@ class Native extends AudioWorkletProcessor {
     if (!x) return;
     // (MIDI for a build without a MIDI IN, or one whose MIDI IN takes no notes: its notes as keys;
     // the rest to its MIDI IN where it has one)
-    if (i.type === "midi" && (this.mp || !this.midi || this.notesAsKeys)) {
+    const midi = this.mp ? this.mp.midi : this.midi; // (this build's MIDI IN, as three bytes; none: undefined)
+    if (i.type === "midi" && (!midi || this.notesAsKeys)) {
       for (let k = 0; k + 2 < i.bytes.length; k += 3) {
         const [st, d1, d2] = [i.bytes[k], i.bytes[k + 1], i.bytes[k + 2]];
         const key = (this.noteKeys ??= new NoteKeys()).key(st, d1, d2);
         if (key) this.input(key);
-        else if (this.midi && !this.mp && ((st & 0xf0) !== 0x90 && (st & 0xf0) !== 0x80)) this.midi(st, d1, d2);
+        else if (midi && ((st & 0xf0) !== 0x90 && (st & 0xf0) !== 0x80)) midi(st, d1, d2);
       }
       return;
     }
-    if (this.mp) return this.mp.input(i);
+    if (this.mp) {
+      if (i.type === "midi") { for (let k = 0; k + 2 < i.bytes.length; k += 3) midi(i.bytes[k], i.bytes[k + 1], i.bytes[k + 2]); return; }
+      return this.mp.input(i);
+    }
     if (i.type === "key") {
       const isKey = i.id >= 14, bit = 1 << (isKey ? i.id - 14 : this.ids ? i.id : label(i.id));
       const was = isKey ? this.keys : this.buttons, now = i.down ? was | bit : was & ~bit;
@@ -559,8 +800,9 @@ class Native extends AudioWorkletProcessor {
   }
 
   publishMpyre() {
-    const fb = this.mp.screen();
-    if (fb) this.sendScreen(fb, true);
+    const s = this.mp.screen();
+    if (s?.rgba) this.port.postMessage({ type: "frame", rgba: s.rgba }, [s.rgba.buffer]);
+    else if (s) this.sendScreen(s.fb, s.swap);
     const levels = this.mp.levels();
     if (levels) this.port.postMessage({ type: "events", events: [{ type: "leds", levels }] });
     const bytes = this.mp.due(currentTime);

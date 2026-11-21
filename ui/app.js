@@ -5,6 +5,7 @@
 
 import * as web from "./web/transport-web.js";
 import { connectMidi } from "./midi-controller.js";
+import * as mixer from "./mixer.js";
 
 const $ = (id) => document.getElementById(id);
 const status = (text, bad = false) => {
@@ -24,6 +25,15 @@ let selected = 0; // the screen the panel plays
 let query = "";   // what the search box holds
 let builds = [];
 const sounding = new Map(); // a controller's notes held: "channel:note" -> the screen they went to (see playNote)
+
+// The mix (mixer.js): a fifth box after the screens. Chosen, the panel's knobs set the four
+// volumes (top) and master, filter, delay, reverb (below); the keys and buttons still play the
+// screen chosen before it (`selected`). Kept in this browser.
+const MIX = "luka.mix";
+let mixing = false;
+let mixBox = null; // { el, ctx } once the transport has a mixer
+let mixState = (() => { try { return mixer.sane(JSON.parse(localStorage.getItem(MIX) ?? "null")); } catch { return mixer.defaults(); } })();
+const pickup = mixer.createPickup(); // (a controller knob that says where it stands takes over a value only once it reaches it)
 
 const cur = () => slots[selected];
 /// A screen whose firmware takes what the panel does: one is loaded there, and it is playing.
@@ -47,7 +57,7 @@ showTheme();
 
 // ------------------------------------------------------------------ the screens
 
-function makeSlots(count) {
+function makeSlots(count, withMixer = false) {
   slots = Array.from({ length: count }, (_, n) => {
     const canvas = el("canvas", { width: 240, height: 240 });
     const s = { n, canvas, ctx: canvas.getContext("2d"), pending: null, firmware: null, loading: null, muted: false, paused: false, levels: null, pot: 800 };
@@ -57,7 +67,7 @@ function makeSlots(count) {
     // (stop holds the firmware where it is, still loaded; the list's unload takes it away.
     // A stopped firmware is left alone by the panel: see `live`)
     s.stop = el("button", { className: "text run", type: "button", onclick: () => { if (n === selected && !s.paused) releaseAll(); send({ type: "pause", slot: n, paused: !s.paused }); } });
-    s.choose = el("button", { className: "choose", type: "button", textContent: "choose firmware", onclick: () => { select(n); menu(true); } });
+    s.choose = el("button", { className: "choose", type: "button", textContent: "choose", onclick: () => { select(n); menu(true); } });
     s.el = el("article", { className: "slot" },
       el("div", { className: "glass" }, canvas, s.choose),
       el("div", { className: "bar" }, el("span", { className: "num", textContent: String(n + 1) }), s.name),
@@ -65,9 +75,20 @@ function makeSlots(count) {
     s.el.addEventListener("pointerdown", () => select(n));
     return s;
   });
-  $("slots").replaceChildren(...slots.map((s) => s.el));
+  // the mix, after the screens: its preview is the mixer drawn small
+  if (withMixer) {
+    const canvas = el("canvas", { width: 240, height: 240 });
+    mixBox = { canvas, ctx: canvas.getContext("2d"), el: el("article", { className: "slot mixbox" },
+      el("div", { className: "glass" }, canvas),
+      el("div", { className: "bar" }, el("span", { className: "num", textContent: String(count + 1) }), el("span", { className: "name", textContent: "mix" }))) };
+    mixBox.el.addEventListener("pointerdown", () => setMixing(true));
+  }
+  $("slots").replaceChildren(...slots.map((s) => s.el), ...(mixBox ? [mixBox.el] : []));
+  $("slots").style.setProperty("--boxes", String(count + (mixBox ? 1 : 0)));
+  for (let i = 0; i < 8; i++) send(mixer.command(mixState, i)); // (the transport keeps them until there is sound)
   slots.forEach(drawSlot);
   showSelected();
+  drawMix();
 }
 
 function drawSlot(s) {
@@ -75,14 +96,15 @@ function drawSlot(s) {
   s.el.classList.toggle("empty", !busy);
   s.el.classList.toggle("muted", s.muted);
   s.el.classList.toggle("paused", !!s.firmware && s.paused);
-  s.el.classList.toggle("selected", s.n === selected);
+  s.el.classList.toggle("selected", s.n === selected && !mixing);
+  s.el.classList.toggle("played", s.n === selected && mixing); // (the one the keys play while the mix is chosen)
   s.name.textContent = s.firmware ? s.firmware.repo : s.waiting ? s.waiting : s.loading ? "loading…" : "empty";
   s.name.hidden = !busy;
   // (a firmware from last time, waiting for the click that lets the page make sound: see `restore`)
   s.choose.hidden = busy && !s.waiting;
   s.el.classList.toggle("waiting", !!s.waiting);
   s.choose.classList.toggle("resume", !!s.waiting);
-  s.choose.textContent = s.waiting ? "play" : "choose firmware";
+  s.choose.textContent = s.waiting ? "play" : "choose";
   s.mute.hidden = !s.firmware;
   s.mute.textContent = s.muted ? "unmute" : "mute";
   s.stop.hidden = !s.firmware;
@@ -95,6 +117,7 @@ const stageCtx = $("stage-canvas").getContext("2d");
 function drawStage() {
   const s = cur();
   if (!s) return;
+  if (mixing) return drawMix();
   stageCtx.clearRect(0, 0, 240, 240);
   if (s.firmware) stageCtx.drawImage(s.canvas, 0, 0);
   const stage = $("stage"), choose = $("stage-choose");
@@ -116,8 +139,10 @@ function onFrame(rgba, slot = 0) {
 
 /// The panel plays another screen's firmware: what was held is let go first.
 function select(n) {
-  if (n === selected || !slots[n]) return;
+  if ((n === selected && !mixing) || !slots[n]) return;
   releaseAll();
+  if (mixing) leaveMix();
+  pickup.release(); // (the controller's knobs stand where the last screen had them)
   selected = n;
   showHeld();
   slots.forEach(drawSlot);
@@ -132,10 +157,97 @@ function showSelected() {
   const s = cur();
   if (!s) return;
   paintLeds();
-  document.querySelector("[data-pot]").style.setProperty("--turn", `${-135 + 270 * s.pot / 1023}deg`);
+  showKnobs();
   $("device").classList.toggle("locked", !live(s));
-  $("playing-into").textContent = s.waiting ? `${s.waiting} waits for its play.` : !s.firmware ? `screen ${s.n + 1} is empty.`
+  $("device").classList.toggle("mixing", mixing);
+  const playing = s.waiting ? `${s.waiting} waits for its play.` : !s.firmware ? `screen ${s.n + 1} is empty.`
     : s.paused ? `${s.firmware.repo} is stopped: press its play.` : `playing ${s.firmware.repo}${s.muted ? " (muted)" : ""}.`;
+  $("playing-into").textContent = mixing ? `mix: the knobs set the volumes and effects; keys: ${live(s) ? s.firmware.repo : "none"}.` : playing;
+}
+
+// ------------------------------------------------------------------ the mix
+
+/// The mix chosen (or not): the knobs change what they do and show, the stage shows the mixer.
+function setMixing(on) {
+  if (!mixBox || on === mixing) return;
+  mixing = on;
+  pickup.release(); // (the controller's knobs stand wherever the other values had them)
+  mixBox.el.classList.toggle("selected", on);
+  slots.forEach(drawSlot);
+  showSelected();
+  if (on) meterLoop(); else drawStage();
+}
+function leaveMix() { mixing = false; pickup.release(); mixBox?.el.classList.remove("selected"); $("device").classList.remove("mixing"); }
+
+/// Knob i of the mix set to state `next` (sent, kept, shown).
+function mixSet(i, next) {
+  if (mixer.valueOf(next, i) === mixer.valueOf(mixState, i)) return;
+  mixState = next;
+  send(mixer.command(mixState, i));
+  try { localStorage.setItem(MIX, JSON.stringify(mixState)); } catch { /* not kept, then */ }
+  showKnobs();
+  drawMix();
+}
+
+/// The knobs as they are now: the mix's labels and values, or the firmware's.
+function showKnobs() {
+  knobs.forEach((knob, i) => {
+    knob.dataset.label = mixing ? mixer.LABELS[i] : knob.dataset.own;
+    const deg = mixing ? mixer.angleOf(mixState, i) : knob.dataset.pot ? -135 + 270 * (cur()?.pot ?? 800) / 1023 : Number(knob.dataset.angle || 0);
+    knob.style.setProperty("--turn", `${deg}deg`);
+    knob.title = mixing ? `${mixer.LABELS[i]}: ${mixer.text(mixState, i)}` : "";
+  });
+}
+
+/// The mixer, drawn: the four slots as strips (name, volume, level), the effects under them.
+/// On the stage while the mix is chosen, and always small in the mix's box.
+let levels = [0, 0, 0, 0];
+function drawMix() {
+  if (!mixBox) return;
+  const css = getComputedStyle(root), ink = "#f0eee9", dim = "#5e5c58", signal = css.getPropertyValue("--signal").trim() || "#ff4a1c";
+  for (const ctx of mixing ? [stageCtx, mixBox.ctx] : [mixBox.ctx]) {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, 240, 240);
+    ctx.font = "600 13px Helvetica, Arial, sans-serif";
+    ctx.textBaseline = "top";
+    for (let i = 0; i < 4; i++) {
+      const x = 14 + i * 56, s = slots[i], v = mixState.volumes[i], on = !!s?.firmware && !s.muted;
+      ctx.fillStyle = on ? ink : dim;
+      ctx.fillText(String(i + 1), x, 10);
+      // the volume: a tall bar; the level beside it, as it plays
+      ctx.fillStyle = "#222"; ctx.fillRect(x, 32, 18, 120); ctx.fillRect(x + 22, 32, 8, 120);
+      ctx.fillStyle = on ? ink : dim; ctx.fillRect(x, 32 + 120 * (1 - v), 18, 120 * v);
+      const l = Math.min(1, levels[i] || 0);
+      ctx.fillStyle = l > 0.95 ? signal : "#8fd18a"; ctx.fillRect(x + 22, 32 + 120 * (1 - l), 8, 120 * l);
+      ctx.fillStyle = on ? ink : dim;
+      ctx.fillText(mixer.text(mixState, i), x, 158);
+    }
+    for (let k = 0; k < 4; k++) {
+      const i = 4 + k, x = 14 + k * 56;
+      ctx.fillStyle = dim; ctx.fillText(mixer.LABELS[i], x, 190);
+      ctx.fillStyle = i === 4 || mixer.valueOf(mixState, i) ? signal : ink;
+      ctx.fillText(mixer.text(mixState, i), x, 210);
+    }
+  }
+  if (mixing) {
+    $("stage").classList.remove("empty", "paused");
+    $("stage-name").textContent = "mix";
+  }
+}
+
+/// While the mix is chosen: its meters, about 30 times a second.
+let metering = false;
+function meterLoop() {
+  if (metering) return;
+  metering = true;
+  const tick = () => {
+    if (!mixing) { metering = false; levels = [0, 0, 0, 0]; drawMix(); return; }
+    const now = globalThis.fma?.levels?.() || [];
+    levels = levels.map((l, i) => Math.max(now[i] || 0, l * 0.85)); // (falls back slowly, as a meter does)
+    drawMix();
+    setTimeout(() => requestAnimationFrame(tick), 30);
+  };
+  tick();
 }
 
 // ------------------------------------------------------------------ events
@@ -410,21 +522,26 @@ const keys = new Map();
 }
 
 // knobs: encoders turn in clicks, the pot holds a value (each screen's firmware its own)
-function setPot(v) {
+function setPot(v, byHand = true) {
   const s = cur();
   if (!live(s)) return;
   s.pot = Math.min(1023, Math.max(0, v));
+  if (byHand) pickup.release(`pot:${s.n}`); // (a controller's knob must reach it again)
   document.querySelector("[data-pot]").style.setProperty("--turn", `${-135 + 270 * s.pot / 1023}deg`);
   input({ type: "analog", channel: 4, value: s.pot });
 }
 const knobs = [...document.querySelectorAll(".knob")];
+for (const knob of knobs) knob.dataset.own = knob.dataset.label; // (the firmware's names; the mix shows its own)
 const turns = []; // each knob's turn(clicks), in the panel's order (for a MIDI controller's knobs)
-for (const knob of knobs) {
+for (const [index, knob] of knobs.entries()) {
   let angle = 0, dragY = null, carry = 0;
   const turn = (clicks) => {
-    if (!clicks || !live(cur())) return;
+    if (!clicks) return;
+    if (mixing) { pickup.release(`mix:${index}`); return mixSet(index, mixer.turned(mixState, index, clicks)); }
+    if (!live(cur())) return;
     if (knob.dataset.pot) return setPot(cur().pot + clicks * 32);
     angle += clicks * 15;
+    knob.dataset.angle = String(angle);
     knob.style.setProperty("--turn", `${angle}deg`);
     input({ type: "encoder", id: Number(knob.dataset.enc), clicks });
   };
@@ -448,6 +565,7 @@ const TYPED = { a: 21, w: 22, s: 23, e: 24, d: 25, f: 26, t: 27, g: 28, y: 29, h
 function typed(e, down) {
   if (e.target.closest?.("input, textarea") || e.ctrlKey || e.metaKey || e.altKey || (down && e.repeat)) return;
   if (down && e.key >= "1" && e.key <= "9" && slots[Number(e.key) - 1]) { e.preventDefault(); return select(Number(e.key) - 1); }
+  if (down && mixBox && e.key === String(slots.length + 1)) { e.preventDefault(); return setMixing(true); } // (the mix's number)
   const id = TYPED[e.key.toLowerCase()];
   if (id === undefined || (down && !live(cur()))) return;
   e.preventDefault();
@@ -479,7 +597,7 @@ if (transport) {
     const connected = await transport.connect({ onEvent, onFrame });
     send = connected.send;
     globalThis.fma = connected; // for a look from the console
-    makeSlots(connected.slots || 1); // (a transport that plays one firmware has one screen)
+    makeSlots(connected.slots || 1, !!connected.mixer); // (a transport that plays one firmware has one screen; one with a mixer, the mix too)
     status("Ready");
     send({ type: "list_builds" });
   } catch (e) {
@@ -492,9 +610,12 @@ if (transport) {
 // ------------------------------------------------------------------ MIDI controller
 
 /// The next (or previous) screen that has a firmware on it, round the screens; none: stays.
+/// The mix is one more stop, after the last screen (when the transport has a mixer).
 function step(direction) {
-  for (let i = 1; i <= slots.length; i++) {
-    const n = (selected + direction * i + slots.length * i) % slots.length;
+  const stops = slots.length + (mixBox ? 1 : 0), at = mixing ? slots.length : selected;
+  for (let i = 1; i <= stops; i++) {
+    const n = (at + direction * i + stops * i) % stops;
+    if (n === slots.length) return setMixing(true);
     if (slots[n].firmware) return select(n);
   }
 }
@@ -551,10 +672,21 @@ connectMidi({
       markCursor(true);
     },
     // knob i of the panel turned by a controller's knob: as if by hand
+    // (a knob that says where it stands takes over a value only once it reaches it: pickup)
     knob(i, { delta, value }) {
       if (!knobs[i]) return;
-      if (knobs[i].dataset.pot && value !== undefined) setPot(Math.round(value / 127 * 1023)); // (the master: a position says where)
-      else turns[i](delta);
+      if (mixing) {
+        if (value === undefined) return turns[i](delta);
+        const at = pickup.take(`mix:${i}`, value / 127, mixer.positionOf(mixState, i));
+        if (at !== null) mixSet(i, mixer.withValue(mixState, i, mixer.fromPosition(i, at)));
+        return;
+      }
+      if (knobs[i].dataset.pot && value !== undefined) { // (the master: a position says where)
+        const s = cur();
+        if (!live(s)) return;
+        const at = pickup.take(`pot:${s.n}`, value / 127, s.pot / 1023);
+        if (at !== null) setPot(Math.round(at * 1023), false);
+      } else turns[i](delta);
     },
     status,
   },

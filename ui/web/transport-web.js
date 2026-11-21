@@ -6,6 +6,9 @@
 //                 (apps/web-server), since a page may not download a release's files itself.
 //   the player    in the audio thread (player-worklet.js): the emulator compiled to
 //                 WebAssembly, run by the sound card's clock, its audio played as it is made.
+//   the mixer     each slot's volume and the effects on all of them (mixbus.js): `mix` and `fx`.
+
+import { createMixBus } from "./mixbus.js";
 
 export const available = () => typeof indexedDB !== "undefined" && typeof AudioWorkletNode !== "undefined" && typeof WebAssembly !== "undefined";
 
@@ -132,6 +135,9 @@ export const SLOTS = 4;
 
 export async function connect({ onEvent, onFrame }) {
   let context = null;     // the sound, once something has played
+  let bus = null;         // the mixer (mixbus.js), made with the sound
+  // (what the mixer is set to, kept before there is sound and given to the bus when it is made)
+  const mix = { volumes: Array(SLOTS).fill(1), fx: { master: 1, filter: 0, delay: 0, reverb: 0 } };
   const modules = {};     // kind -> its worklet file, loaded (a promise)
   const slots = Array.from({ length: SLOTS }, () => null); // each: { kind, id, muted, paused, started, node, gain, asked }
   let now = null;         // the emulated firmware watched: { slot, entry, id, mhz, fixed, since, bad, warm, told, timer }
@@ -264,6 +270,9 @@ export async function connect({ onEvent, onFrame }) {
       // (?latency=N: the output's buffer in milliseconds, for trying others)
       const latency = Number(new URLSearchParams(location.search).get("latency")) || LATENCY_MS;
       context = new AudioContext({ sampleRate: 44100, latencyHint: latency / 1000 });
+      bus = createMixBus(context, SLOTS);
+      mix.volumes.forEach((v, i) => bus.setVolume(i, v));
+      bus.setFx(mix.fx);
     }
     free(slot);
     const entry = slots[slot] = { kind, id, muted: !!muted, paused: !!paused, started: false, node: null, gain: null, asked: [] };
@@ -281,7 +290,7 @@ export async function connect({ onEvent, onFrame }) {
         onEvent({ type: "error", command: "start", slot, message: "the player stopped working: reload the page" });
         if (slots[slot] === entry) free(slot);
       };
-      node.connect(gain).connect(context.destination);
+      node.connect(gain).connect(bus.strip(slot)); // (its mute, then the mixer's strip for this slot)
       if (bytes) node.port.postMessage({ type: "module", bytes }, [bytes]);
       entry.node = node;
       entry.gain = gain;
@@ -446,10 +455,31 @@ export async function connect({ onEvent, onFrame }) {
         onEvent({ type: "muted", slot, muted: s.muted });
         break;
       }
+      // The mixer (mixbus.js): a slot's volume, kept for that slot whatever plays in it, 0..1.
+      case "mix": {
+        const slot = slotOf(c), v = Math.min(1, Math.max(0, Number(c.volume)));
+        if (!Number.isFinite(v)) throw new Error("a volume is a number from 0 to 1");
+        mix.volumes[slot] = v;
+        bus?.setVolume(slot, v);
+        break;
+      }
+      // The effects on everything: any of master, delay, reverb (0..1) and filter (-1..1).
+      case "fx": {
+        for (const [k, lo] of [["master", 0], ["filter", -1], ["delay", 0], ["reverb", 0]]) {
+          if (c[k] === undefined) continue;
+          const v = Number(c[k]);
+          if (!Number.isFinite(v)) throw new Error(`${k} is a number`);
+          mix.fx[k] = Math.min(1, Math.max(lo, v));
+        }
+        bus?.setFx(mix.fx);
+        break;
+      }
     }
   }
 
   const send = (command) => run(command).catch((e) => onEvent({ type: "error", command: command.type, slot: command.slot, message: e.message || String(e) }));
   /// `stats`: how the players fared since the last ask (for measuring: see player-worklet.js).
-  return { stats, send, slots: SLOTS };
+  /// `levels`: each slot's peak now, 0..1, after its volume (none before there is sound).
+  /// `mixer`: the bus's nodes, for a look from the console.
+  return { stats, send, slots: SLOTS, mixer: true, levels: () => bus ? bus.levels() : Array(SLOTS).fill(0), bus: () => bus };
 }

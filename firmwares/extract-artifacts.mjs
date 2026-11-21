@@ -114,7 +114,7 @@ const ARTIFACT_MAP = [
     id: 'Arctic-scream-FM-1',
     name: 'Arctic Scream',
     type: 'git',
-    ref: 'origin/gh-pages:grimm.wasm',
+    ref: 'origin/gh-pages:arctic.wasm', // (grimm.wasm until 2.0; arctic.wasm from 2.1)
   },
   {
     id: 'fm1-fimba',
@@ -197,6 +197,27 @@ const ARTIFACT_MAP = [
     path: 'docs/emu/index.html',
     wasmVar: 'WASM_B64',
     packVar: 'PACK_B64',
+  },
+  // Added 2026-11-21 (SLOOP 3 and JamesOS publish no browser build: cloned and documented only)
+  {
+    // (fm1-base's emulator, built by its Pages workflow)
+    id: 'fm-1-chimera-vocal',
+    name: 'Chimera Vocal',
+    type: 'web',
+    url: 'https://shan-sherif.github.io/fm-1-chimera-vocal/emu/app.wasm',
+  },
+  {
+    id: 'demake-synth',
+    name: 'Demake',
+    type: 'local',
+    path: 'web/dmk.wasm',
+  },
+  {
+    // (the site's build: newer than the copy in site/emulator/)
+    id: 'viscera',
+    name: 'viscera',
+    type: 'web',
+    url: 'https://de-pattern.github.io/viscera/emulator/viscera.wasm',
   },
 ];
 

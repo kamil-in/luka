@@ -34,7 +34,7 @@ async function processor() {
 export async function playsMidiNotes(bytes, style) {
   if (!style) return false;
   const exports = WebAssembly.Module.exports(new WebAssembly.Module(bytes)).map((e) => e.name);
-  if (!["web_midi", "web_midi_in", "sim_midi"].some((n) => exports.includes(n))) return false;
+  if (!["web_midi", "web_midi_in", "sim_midi", "w_midi", "midi"].some((n) => exports.includes(n))) return false;
   const p = new (await processor())();
   let failed = false;
   p.said = (m) => { if (m.type === "failed" || (m.type === "events" && m.events.some((e) => e.type === "stopped" && e.reason))) failed = true; };

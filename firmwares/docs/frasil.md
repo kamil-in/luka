@@ -6,7 +6,7 @@
 > **Interface Family**: `frasil`  
 > **Source Shim**: `app/web.c / base/web/emu/emu_web.c`  
 > **Build Instructions**: `build.sh / web AudioWorklet`  
-> **Binary Artifact**: `dist/frasil.wasm` (606.9 KB, SHA-256: `0ccf1dd31d250cb9...`)  
+> **Binary Artifact**: `dist/frasil.wasm` (667.6 KB, SHA-256: `c2f07ea8deed56b2...`)  
 
 ## Overview
 

@@ -91,7 +91,12 @@ $repos = @(
     @{ Id = "OSR-1"; Name = "Blop"; Url = "https://github.com/OSR-Experiment/OSR-1.git"; BuildScript = "tools/build_web.sh" },
     @{ Id = "jamtrack-fm1"; Name = "JAMTRACK"; Url = "https://github.com/Philip-Bos/jamtrack-fm1.git"; BuildScript = "" },
     @{ Id = "PERF-1"; Name = "PERF-1"; Url = "https://github.com/deamonSLINKY/PERF-1.git"; BuildScript = "web/emu/build.sh" },
-    @{ Id = "m-pyre"; Name = "M-PYRE"; Url = "https://github.com/HistoryOfSky/m-pyre.git"; BuildScript = "" }
+    @{ Id = "m-pyre"; Name = "M-PYRE"; Url = "https://github.com/HistoryOfSky/m-pyre.git"; BuildScript = "" },
+    @{ Id = "fm-1-chimera-vocal"; Name = "Chimera Vocal"; Url = "https://github.com/shan-sherif/fm-1-chimera-vocal.git"; BuildScript = "" },
+    @{ Id = "demake-synth"; Name = "Demake"; Url = "https://github.com/InigoHernandez/demake-synth.git"; BuildScript = "web/build.sh" },
+    @{ Id = "viscera"; Name = "viscera"; Url = "https://github.com/De-Pattern/viscera.git"; BuildScript = "" },
+    @{ Id = "sloop3-fm1"; Name = "SLOOP 3"; Url = "https://github.com/isod89/sloop3-fm1.git"; BuildScript = "" },
+    @{ Id = "JamesOS"; Name = "JamesOS"; Url = "https://github.com/aarongrando/JamesOS.git"; BuildScript = "" }
 )
 
 # Step 1: Clone, checkout each repository's default branch, and update

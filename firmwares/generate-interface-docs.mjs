@@ -411,6 +411,72 @@ const FIRMWARES = [
     buildScript: 'firmware/host/build_web.sh; published build: docs/emu/index.html (wasm and sound pack inlined; the pack is carried as the wasm\'s "luka.pack" section)',
     compiler: 'clang --target=wasm32',
   },
+  // Added 2026-11-21
+  {
+    id: 'fm-1-chimera-vocal',
+    name: 'Chimera Vocal',
+    repo: 'shan-sherif/fm-1-chimera-vocal',
+    url: 'https://github.com/shan-sherif/fm-1-chimera-vocal',
+    author: 'Shan-Sherif (port of Jameson Hodge\'s CHIMERA)',
+    license: 'MIT / MPL-2.0 / GPL-3.0 (per file)',
+    style: 'x0x',
+    description: 'A singing human voice: a simulated airway (lungs, vocal folds, throat, mouth, nose) sings words, ported from Jameson Hodge\'s CHIMERA.',
+    sourceShim: 'base/web/emu/emu_web.c (fm1-base)',
+    buildScript: 'published build: https://shan-sherif.github.io/fm-1-chimera-vocal/emu/app.wasm (its Pages workflow)',
+    compiler: 'Emscripten (emcc)',
+  },
+  {
+    id: 'demake-synth',
+    name: 'Demake',
+    repo: 'InigoHernandez/demake-synth',
+    url: 'https://github.com/InigoHernandez/demake-synth',
+    author: 'Iñigo Hernández',
+    license: 'GPL-3.0',
+    style: 'demake',
+    description: 'An ambient lofi machine on 64 of its author\'s pedal recordings: three synths, each with a piano roll, eight patterns and its own effects.',
+    sourceShim: 'web/dmk_web.c',
+    buildScript: 'web/build.sh (committed build: web/dmk.wasm)',
+    compiler: 'clang --target=wasm32 (STANDALONE_WASM)',
+  },
+  {
+    id: 'viscera',
+    name: 'viscera',
+    repo: 'De-Pattern/viscera',
+    url: 'https://github.com/De-Pattern/viscera',
+    author: 'De-Pattern',
+    license: 'GPL-3.0 (with the FM1 SDK linking permission)',
+    style: 'viscera',
+    description: 'A four-track tape looper in the spirit of a cassette Portastudio: record, overdub and punch in, set each track\'s speed. Records from a live input, which Luka does not give it yet.',
+    sourceShim: 'its C core (exports init, control, paint, render)',
+    buildScript: 'published build: https://de-pattern.github.io/viscera/emulator/viscera.wasm',
+    compiler: 'clang --target=wasm32',
+  },
+  {
+    id: 'sloop3-fm1',
+    name: 'SLOOP 3',
+    repo: 'isod89/sloop3-fm1',
+    url: 'https://github.com/isod89/sloop3-fm1',
+    author: 'isod89',
+    license: 'GPL-3.0',
+    style: 'none (no browser build: installer and editor only)',
+    description: 'SLOOP 3 (public beta). Its site is an installer; it publishes no browser build, so Luka cannot play it yet.',
+    sourceShim: '-',
+    buildScript: 'fw/build.sh (device firmware only)',
+    compiler: '-',
+  },
+  {
+    id: 'JamesOS',
+    name: 'JamesOS',
+    repo: 'aarongrando/JamesOS',
+    url: 'https://github.com/aarongrando/JamesOS',
+    author: 'Aaron Grando',
+    license: 'GPL-3.0',
+    style: 'none (no browser build)',
+    description: 'A groovebox with three synth tracks, four drum lanes, 24 Plaits engines and a 64-step sequencer. Published as a device firmware and an editor only, so Luka cannot play it yet.',
+    sourceShim: '-',
+    buildScript: '- (device firmware only)',
+    compiler: '-',
+  },
 ];
 
 // Well-known function descriptors
@@ -905,6 +971,22 @@ master += `* **Controls**: \`emu_button(label, down)\` (FX..REC, OCT-, OCT+), \`
 master += `* **LEDs**: \`emu_led_keys(0|1|2)\` (lit, dim, faint) and \`emu_led_buttons()\`.\n`;
 master += `* **Samples**: four 0x14000-byte slots loaded through \`emu_buffer()\` + \`emu_slot(k)\`, then \`emu_reset_tracks()\`; the author's page inlines them (Luka carries them as the wasm's \`luka.pack\` custom section).\n`;
 master += `* **Storage**: five projects (four SAVE slots, the working one): \`emu_proj_get(i)\` / \`emu_proj_put(i, len)\` through \`emu_buffer()\`, \`emu_proj_changed()\` counts slot changes.\n\n`;
+
+master += `### 10. The \`demake\` Family\n`;
+master += `* **Firmwares**: Demake\n`;
+master += `* **Execution**: \`w_init(seed)\`, \`w_render()\` fills 128 frames of 16-bit stereo at \`w_audio()\`. MASTER is applied by the host (output gain).\n`;
+master += `* **Frame Buffer**: \`w_frame(ms)\` draws 240x240 at 4 bits a pixel; \`w_palette()\` gives its 16 colours as 0xRRGGBB.\n`;
+master += `* **Controls**: \`w_key(k, down)\`, \`w_button(label, down)\` (FX..REC, OCT-, OCT+), \`w_encoder(role, delta)\`, \`w_midi(s, d1, d2)\`.\n`;
+master += `* **LEDs**: \`w_leds()\`: 27 keys then 14 buttons, 0..255.\n`;
+master += `* **Storage**: a 64 KiB store at \`w_store()\`, given back before \`w_init\`; \`w_store_gen()\` counts saves.\n\n`;
+
+master += `### 11. The \`viscera\` Family\n`;
+master += `* **Firmwares**: viscera\n`;
+master += `* **Execution**: \`init()\`, \`render(live)\` (128 frames, stereo floats at \`output_buffer()\`; a live input at \`input_buffer()\`). MASTER is the host's (output gain).\n`;
+master += `* **Controls**: \`control(keys, buttons, enc0..enc6, ms)\`: the whole panel at once (buttons OCT- OCT+ FX..REC; encoders SELECT, ALGORITHM, KNOB 1-4, PRESETS as deltas), called every 50 ms too. It returns the host's requests (1 keep a project, 2 give one back; the slot in \`host_arg()\`).\n`;
+master += `* **Frame Buffer**: \`paint(ms)\`, then 240x240 RGB565 at \`screen()\`, host byte order. **LEDs**: \`leds()\`: 14 buttons then 27 keys (2 lit, 1 glow).\n`;
+master += `* **Storage**: its settings (\`device()\`, \`device_changed()\`) and projects in eight slots the host keeps (\`project()\`, \`project_seal\`, \`project_check\`).\n\n`;
+
 
 writeFileSync(join(root, 'INTERFACES.md'), master, 'utf8');
 
