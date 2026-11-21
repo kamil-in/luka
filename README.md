@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/banner.png" alt="Luka: four firmwares playing at once on screens above one front panel with knobs, buttons and keys" width="100%">
+  <img src="docs/banner.png" alt="Luka: FRASIL on the big screen, with X0X, FRASIL, ATEK 303 and OberVave in four slots beside the mix, above the knobs, buttons and keys" width="100%">
 </p>
 
 # Luka
