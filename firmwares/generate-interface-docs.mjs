@@ -477,6 +477,20 @@ const FIRMWARES = [
     buildScript: '- (device firmware only)',
     compiler: '-',
   },
+  // Added 2026-11-26
+  {
+    id: 'h1',
+    name: 'h1',
+    repo: 'jakehandy/h1',
+    url: 'https://github.com/jakehandy/h1',
+    author: 'Jake Handy',
+    license: 'MIT (fm1-base: MPL-2.0)',
+    style: 'x0x',
+    description: 'handy-1: sixteen instruments, each a full-screen animated picture you play, with eight algorithms and four live knobs, a loop recorder, a step sequencer, an arpeggiator and a metronome.',
+    sourceShim: 'base/web/emu/emu_web.c (fm1-base)',
+    buildScript: 'build.sh --web (fm1-base tools/build.py app --web), with Luka\'s patches/h1/: it publishes no browser build',
+    compiler: 'Emscripten (emcc)',
+  },
 ];
 
 // Well-known function descriptors

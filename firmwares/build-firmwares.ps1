@@ -31,6 +31,7 @@
       - FM1-Animatek (animatek/FM1-Animatek)
       - JIANT (juanjiant-bit/JIANT)
       - Golana (Gadlele/Golana)
+      - h1 (jakehandy/h1: built here for the browser, with Luka's patches from patches/h1/)
 
 .EXAMPLE
     .\build-firmwares.ps1
@@ -96,8 +97,40 @@ $repos = @(
     @{ Id = "demake-synth"; Name = "Demake"; Url = "https://github.com/InigoHernandez/demake-synth.git"; BuildScript = "web/build.sh" },
     @{ Id = "viscera"; Name = "viscera"; Url = "https://github.com/De-Pattern/viscera.git"; BuildScript = "" },
     @{ Id = "sloop3-fm1"; Name = "SLOOP 3"; Url = "https://github.com/isod89/sloop3-fm1.git"; BuildScript = "" },
-    @{ Id = "JamesOS"; Name = "JamesOS"; Url = "https://github.com/aarongrando/JamesOS.git"; BuildScript = "" }
+    @{ Id = "JamesOS"; Name = "JamesOS"; Url = "https://github.com/aarongrando/JamesOS.git"; BuildScript = "" },
+    # (publishes no browser build: fm1-base's web emulator is built here, which needs emcc; see patches/h1/)
+    @{ Id = "h1"; Name = "h1"; Url = "https://github.com/jakehandy/h1.git"; BuildScript = "build.sh"; BuildArgs = "--web" }
 )
+
+# Luka's own changes to a firmware, kept as patches/<Id>/*.patch: taken off before an update, so the
+# repository fast-forwards as usual, and put back on after it
+function Get-Patches($id) {
+    $dir = Join-Path (Join-Path $firmwaresDir "patches") $id
+    if (Test-Path $dir) { Get-ChildItem $dir -Filter *.patch | Sort-Object Name } else { @() }
+}
+function Set-Patches($r, [switch]$Off) {
+    # (a failed --check writes to stderr, which "Stop" would turn into an error: its exit code is what is read)
+    $ErrorActionPreference = "Continue"
+    $repoPath = Join-Path $firmwaresDir $r.Id
+    if (-not (Test-Path $repoPath)) { return }
+    $list = @(Get-Patches $r.Id)
+    if ($Off) { [array]::Reverse($list) }
+    foreach ($p in $list) {
+        if ($Off) {
+            git -C $repoPath apply -R --check $p.FullName 2>$null
+            if ($LASTEXITCODE -eq 0) { git -C $repoPath apply -R $p.FullName }
+        } else {
+            git -C $repoPath apply --check $p.FullName 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                git -C $repoPath apply $p.FullName
+                Write-Host "  [PATCH] $($r.Name): $($p.Name)" -ForegroundColor DarkCyan
+            } else {
+                git -C $repoPath apply -R --check $p.FullName 2>$null
+                if ($LASTEXITCODE -ne 0) { Write-Warning "$($r.Name): $($p.Name) no longer applies; update it in patches/$($r.Id)/" }
+            }
+        }
+    }
+}
 
 # Step 1: Clone, checkout each repository's default branch, and update
 Write-Host ">>> [1/3] Cloning and Updating $($repos.Count) Repositories to their latest default branch..." -ForegroundColor Green
@@ -110,6 +143,8 @@ foreach ($r in $repos) {
     } else {
         Write-Host "  [EXISTS] $($r.Name) already cloned at $repoPath" -ForegroundColor DarkGray
     }
+
+    Set-Patches $r -Off
 
     if (-not $SkipPull) {
         try {
@@ -137,6 +172,8 @@ foreach ($r in $repos) {
             Write-Warning "Could not update $($r.Name): $_"
         }
     }
+
+    Set-Patches $r
 }
 
 # Step 2: Compile (if toolchain present) & Retrieve Native Web WASM Builds
@@ -154,7 +191,7 @@ if ($hasEmcc) {
                 if ($r.BuildScript.EndsWith(".py")) {
                     python $scriptPath
                 } else {
-                    sh $scriptPath
+                    if ($r.BuildArgs) { sh $scriptPath $r.BuildArgs } else { sh $scriptPath }
                 }
             } catch {
                 Write-Warning "Local build attempt for $($r.Name) failed: $_. Falling back to repo web build."

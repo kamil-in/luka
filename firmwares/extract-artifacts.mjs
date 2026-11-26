@@ -219,6 +219,15 @@ const ARTIFACT_MAP = [
     type: 'web',
     url: 'https://de-pattern.github.io/viscera/emulator/viscera.wasm',
   },
+  // Added 2026-11-26
+  {
+    // (publishes no browser build: build-firmwares.ps1 builds fm1-base's web emulator, with patches/h1/,
+    // when emcc is installed; without it the build already in dist/ stays)
+    id: 'h1',
+    name: 'h1',
+    type: 'local',
+    path: 'app/build/emu/app.wasm',
+  },
 ];
 
 // A WebAssembly custom section (engines skip it): how a build carries what its page inlined

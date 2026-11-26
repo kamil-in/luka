@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-26T04:00:20.780Z",
-  "count": 35,
+  "generated_at": "2026-11-26T04:27:17.509Z",
+  "count": 36,
   "builds": [
     {
       "id": "fmini-1",
@@ -2086,6 +2086,64 @@
       "imports_count": 0,
       "exports": [],
       "imports": []
+    },
+    {
+      "id": "h1",
+      "name": "h1",
+      "repo": "jakehandy/h1",
+      "url": "https://github.com/jakehandy/h1",
+      "author": "Jake Handy",
+      "license": "MIT (fm1-base: MPL-2.0)",
+      "branch": "main",
+      "commit": "c7734d9f765771aee69e1a305e47bde25c3325a1",
+      "style": "x0x",
+      "file": "h1.wasm",
+      "size": 579819,
+      "sha256": "3d22e780399c7bfae6a70a334e79a28095a08ca818444c25b3f34baa7bbeee39",
+      "available": true,
+      "exports_count": 35,
+      "imports_count": 2,
+      "exports": [
+        "emscripten_stack_get_current",
+        "setThrew",
+        "web_blits",
+        "web_boot",
+        "web_buttons",
+        "web_cpu",
+        "web_dim_buttons",
+        "web_dim_keys",
+        "web_enc",
+        "web_fb",
+        "web_key",
+        "web_keys",
+        "web_lit_buttons",
+        "web_lit_keys",
+        "web_master",
+        "web_midi_in",
+        "web_nobj",
+        "web_now",
+        "web_out_clear",
+        "web_out_l",
+        "web_out_n",
+        "web_out_pkts",
+        "web_out_r",
+        "web_reader",
+        "web_render",
+        "web_said_buf",
+        "web_said_clear",
+        "web_said_len",
+        "web_store",
+        "web_store_len",
+        "web_store_max",
+        "web_store_set_len",
+        "web_store_writes",
+        "web_sysex",
+        "web_sysex_buf"
+      ],
+      "imports": [
+        "wasi_snapshot_preview1.clock_time_get",
+        "wasi_snapshot_preview1.fd_write"
+      ]
     }
   ]
 }

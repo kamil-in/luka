@@ -14,6 +14,7 @@
 /firmwares/*/
 !/firmwares/docs/
 !/firmwares/dist/
+!/firmwares/patches/
 
 # Operating System files
 .DS_Store

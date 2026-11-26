@@ -31,7 +31,7 @@ No install, no account, nothing to download first. Best in **Chrome or Edge** on
 ## Start jamming in a minute
 
 1. **Open** [kamil-in.github.io/luka](https://kamil-in.github.io/luka/).
-2. Click the **menu button** (three lines, top left) to open the list of firmwares. There are 32.
+2. Click the **menu button** (three lines, top left) to open the list of firmwares. There are 33.
 3. Press **load** next to one. It fills the first free screen and starts.
    Some firmwares **play by themselves** the moment they start (the ambient and generative ones); Luka loads those
    **stopped** so they do not surprise you. Press **play** on their screen when you want them.
@@ -92,14 +92,14 @@ first one, the firmware's volume) isn't at zero.
 
 ## What to play
 
-Thirty-two firmwares from the FM-1 community, each with its own character. A few ideas to start (each description is a
+Thirty-three firmwares from the FM-1 community, each with its own character. A few ideas to start (each description is a
 summary of what that project says about itself; follow the link in [Credits](#credits) for the real thing):
 
 | If you want... | Try |
 |---|---|
 | **Ambient beds and drones** | AMB-1, Niagara Drift, FRASIL (frozen drones with shimmer reverb), Aisling (dream-harp soundscapes), SATIE-1 (Satie-inspired generative piano), GR!MM, Arctic Scream, Demake (an ambient lofi machine on pedal recordings) |
 | **Beats and bass** | X0X (a 303 bass synth with 808 and 909 drum machines), FMini-1 (a 4-track groovebox), Melodee (909 drums, a sequencer), ATEK 303, LOAF BREAKER (hardcore kicks and chopped breaks), PERF-1 (a groovebox that plays itself while you steer it), JAMTRACK (a backing band that follows your chords) |
-| **A lead to play over it** | MONK-1 (a velocity-sensitive monophonic synth that talks), FiMba-1 (an electric kalimba), ZEN-1 (koto, shakuhachi, erhu, with microtones), S1Vave and OberVave (analogue-modelling synths), OG Synth, JIANT, Golana, M-PYRE (a rock and metal riffbox with guitar samples), Chimera Vocal (a singing human voice) |
+| **A lead to play over it** | MONK-1 (a velocity-sensitive monophonic synth that talks), FiMba-1 (an electric kalimba), ZEN-1 (koto, shakuhachi, erhu, with microtones), S1Vave and OberVave (analogue-modelling synths), OG Synth, JIANT, Golana, M-PYRE (a rock and metal riffbox with guitar samples), Chimera Vocal (a singing human voice), h1 (sixteen instruments, each an animated picture you play) |
 | **Something to wander through** | Nachtfahrt (a Berlin-school night drive), Loom (a generative pattern weaver), Mutable Dreams (over 50 oscillator models), CoralFlower (a live arpeggiator), Skiff (a modular patch environment), Blop (one-finger chords and an aquarium), viscera (a four-track tape looper) |
 
 <details>
@@ -173,7 +173,9 @@ Luka is only a player. **Everything you hear was made by other people**, and thi
 <summary><b>The firmwares</b></summary>
 
 Each firmware is the work of its author, published as open source for the **M-VAVE FM-1**. Luka plays the **browser
-build each author published**, unmodified, under that author's own licence. Please visit their projects, star them, read their
+build each author published**, unmodified, under that author's own licence. The one exception is **h1**, which
+publishes no browser build: Luka builds it from its source, with one variable renamed so that it compiles for the browser
+([`firmwares/patches/h1/`](firmwares/patches/h1/)). Please visit their projects, star them, read their
 manuals, and support them.
 
 | Firmware | Author | Licence | Project |
@@ -191,6 +193,7 @@ manuals, and support them.
 | FRASIL | Styves Goupil | MPL-2.0 / GPL-3.0 | [styvesgoupil/frasil](https://github.com/styvesgoupil/frasil) |
 | Golana | Gadlele | GPL-3.0 | [Gadlele/Golana](https://github.com/Gadlele/Golana) |
 | GR!MM | GRiMMBIENT | GPL-3.0 | [GRiMMBIENT/grimm](https://github.com/GRiMMBIENT/grimm) |
+| h1 (handy-1) | Jake Handy | MIT (fm1-base: MPL-2.0) | [jakehandy/h1](https://github.com/jakehandy/h1) |
 | JAMTRACK | PhilipsKnobs | MIT | [Philip-Bos/jamtrack-fm1](https://github.com/Philip-Bos/jamtrack-fm1) |
 | JIANT | juanjiant-bit | GPL-3.0 | [juanjiant-bit/JIANT](https://github.com/juanjiant-bit/JIANT) |
 | LOAF BREAKER | FLEXOR | MPL-2.0 | [FLEXOR-R/loaf-breaker](https://github.com/FLEXOR-R/loaf-breaker) |
