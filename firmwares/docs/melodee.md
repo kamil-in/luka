@@ -6,7 +6,7 @@
 > **Interface Family**: `melodee`  
 > **Source Shim**: `web/emu/melodee_web.c`  
 > **Build Instructions**: `web/emu/build.sh`  
-> **Binary Artifact**: `dist/melodee.wasm` (1008.0 KB, SHA-256: `7224e5a52ea32a9b...`)  
+> **Binary Artifact**: `dist/melodee.wasm` (1099.5 KB, SHA-256: `2bb0ff68d9183c9c...`)  
 
 ## Overview
 

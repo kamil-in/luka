@@ -6,7 +6,7 @@
 > **Interface Family**: `viscera`  
 > **Source Shim**: `its C core (exports init, control, paint, render)`  
 > **Build Instructions**: `published build: https://de-pattern.github.io/viscera/emulator/viscera.wasm`  
-> **Binary Artifact**: `dist/viscera.wasm` (195.1 KB, SHA-256: `136b88f66b441a6c...`)  
+> **Binary Artifact**: `dist/viscera.wasm` (202.9 KB, SHA-256: `4a110c7d9cc4f0a9...`)  
 
 ## Overview
 

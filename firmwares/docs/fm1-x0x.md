@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `web/emu/x0x_web.c`  
 > **Build Instructions**: `web/emu/build.sh`  
-> **Binary Artifact**: `dist/fm1-x0x.wasm` (533.0 KB, SHA-256: `98d17e62f70b327d...`)  
+> **Binary Artifact**: `dist/fm1-x0x.wasm` (544.2 KB, SHA-256: `fb47f2fa5dc93dff...`)  
 
 ## Overview
 

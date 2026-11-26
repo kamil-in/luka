@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `web/emu/amb_web.c`  
 > **Build Instructions**: `web/emu/build.sh; published build: gh-pages emu/amb.wasm`  
-> **Binary Artifact**: `dist/PERF-1.wasm` (689.8 KB, SHA-256: `5854e909fb51cb16...`)  
+> **Binary Artifact**: `dist/PERF-1.wasm` (865.5 KB, SHA-256: `a8a122346c888e2d...`)  
 
 ## Overview
 
@@ -21,7 +21,7 @@ A groovebox that plays itself while you steer it: nineteen genres, FM pad, bass,
 | **Clock Model** | AudioWorklet frame pull; host calls render per audio block (128 frames / 2.9 ms) |
 | **Sample Rate** | 44,100 Hz stereo interleaved or split float32 arrays |
 | **Display Resolution** | 240 x 240 pixels (RGB565 in device byte order) |
-| **Exported Functions** | 22 exported WebAssembly functions |
+| **Exported Functions** | 65 exported WebAssembly functions |
 | **Imported Symbols** | None (self-contained) |
 
 ## Exported Interface Functions
@@ -87,6 +87,54 @@ A groovebox that plays itself while you steer it: nineteen genres, FM pad, bass,
 | `web_out_l` | `-> float*` | Pointer to float32 left audio channel buffer (normalized -1.0 .. 1.0) |
 | `web_out_r` | `-> float*` | Pointer to float32 right audio channel buffer (normalized -1.0 .. 1.0) |
 | `web_render` | `(uint32_t n)` | Render n stereo frames (up to 1024) into the audio output buffers |
+
+### Other
+
+| Function | Signature / Return | Description |
+| :--- | :--- | :--- |
+| `web_st_boot` | `void` | Exported WebAssembly runtime function |
+| `web_st_clock` | `void` | Exported WebAssembly runtime function |
+| `web_st_code_now` | `void` | Exported WebAssembly runtime function |
+| `web_st_code_play` | `void` | Exported WebAssembly runtime function |
+| `web_st_dj_name` | `void` | Exported WebAssembly runtime function |
+| `web_st_flex` | `void` | Exported WebAssembly runtime function |
+| `web_st_flex_n` | `void` | Exported WebAssembly runtime function |
+| `web_st_flex_name` | `void` | Exported WebAssembly runtime function |
+| `web_st_fx_key` | `void` | Exported WebAssembly runtime function |
+| `web_st_fx_lock` | `void` | Exported WebAssembly runtime function |
+| `web_st_fx_lock_hi` | `void` | Exported WebAssembly runtime function |
+| `web_st_fx_name` | `void` | Exported WebAssembly runtime function |
+| `web_st_fx_nkeys` | `void` | Exported WebAssembly runtime function |
+| `web_st_fx_page` | `void` | Exported WebAssembly runtime function |
+| `web_st_fxp_n` | `void` | Exported WebAssembly runtime function |
+| `web_st_fxp_num` | `void` | Exported WebAssembly runtime function |
+| `web_st_fxp_set` | `void` | Exported WebAssembly runtime function |
+| `web_st_fxp_str` | `void` | Exported WebAssembly runtime function |
+| `web_st_go` | `void` | Exported WebAssembly runtime function |
+| `web_st_io` | `void` | Exported WebAssembly runtime function |
+| `web_st_io_len` | `void` | Exported WebAssembly runtime function |
+| `web_st_live` | `void` | Exported WebAssembly runtime function |
+| `web_st_note` | `void` | Exported WebAssembly runtime function |
+| `web_st_open` | `void` | Exported WebAssembly runtime function |
+| `web_st_par` | `void` | Exported WebAssembly runtime function |
+| `web_st_par_get` | `void` | Exported WebAssembly runtime function |
+| `web_st_play` | `void` | Exported WebAssembly runtime function |
+| `web_st_playing` | `void` | Exported WebAssembly runtime function |
+| `web_st_put` | `void` | Exported WebAssembly runtime function |
+| `web_st_read` | `void` | Exported WebAssembly runtime function |
+| `web_st_roll` | `void` | Exported WebAssembly runtime function |
+| `web_st_save` | `void` | Exported WebAssembly runtime function |
+| `web_st_set` | `void` | Exported WebAssembly runtime function |
+| `web_st_sl` | `void` | Exported WebAssembly runtime function |
+| `web_st_sl_len` | `void` | Exported WebAssembly runtime function |
+| `web_st_stem` | `void` | Exported WebAssembly runtime function |
+| `web_st_trk` | `void` | Exported WebAssembly runtime function |
+| `web_st_txt` | `void` | Exported WebAssembly runtime function |
+| `web_st_vox` | `void` | Exported WebAssembly runtime function |
+| `web_st_vox_dx` | `void` | Exported WebAssembly runtime function |
+| `web_st_vox_get` | `void` | Exported WebAssembly runtime function |
+| `web_st_vox_n` | `void` | Exported WebAssembly runtime function |
+| `web_st_vox_put` | `void` | Exported WebAssembly runtime function |
 
 ## Integration with FM-1 Adapter Player
 

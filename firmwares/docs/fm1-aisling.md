@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `web/emu/amb_web.c`  
 > **Build Instructions**: `web/emu/build.sh`  
-> **Binary Artifact**: `dist/fm1-aisling.wasm` (366.9 KB, SHA-256: `56428c4dd8c2129b...`)  
+> **Binary Artifact**: `dist/fm1-aisling.wasm` (412.6 KB, SHA-256: `1fc4dc1343dcae61...`)  
 
 ## Overview
 
