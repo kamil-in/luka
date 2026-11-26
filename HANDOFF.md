@@ -275,6 +275,30 @@ Open questions for the owner: the keys' bottom edge versus the stage's at small 
 the spacing, or give the stage a larger minimum); whether 546 px of right column is too wide for
 laptops (the stage gives up the width, 404 px at 1024).
 
+## M-Vsynth2 and JT-80x0 (M-vance): a new adapter, "wsim" (2026-11-26)
+
+38 repos are followed now; **35 builds play in the app**.
+
+- **M-Vsynth2** and **JT-80x0** (bk40-home; JT-80x0 was M-vance, renamed 23 Nov, same repo): both Dinghy
+  (Felucca) based, each with a web simulator (`sim/mv_websim.c`) built by Emscripten for its own page and
+  committed in `docs/sim/` (what their Pages serve: M-Vsynth2's workflow rebuilds it, M-vance's ships it as
+  committed). Taken from there, as published; not built here (`sim/build.sh` writes into `docs/`, and the
+  clone would then not fast-forward). M-vance's source has commits after its sim (runtime audio rate, the
+  VIBE FM port P2/P3: work for other hardware), not in its published sim yet.
+- New family/style `wsim` (`native-kinds.js`) and `Wsim` in `native-worklet.js` (an OWN class). It stands
+  in for Emscripten's generated script: `__wasm_call_ctors`, then `main(0,0)`, whose loop fills a 2048-frame
+  ring and then calls `emscripten_sleep`, which `Wsim` unwinds (Asyncify, its own 64 KiB data from the
+  build's `malloc`); each block rewinds into it once and `wsim_pull`s 128 frames. `emscripten_resize_heap`
+  grows the memory. `startOwn` now lets an OWN class add imports (`Own.imports(imports, late)`, with
+  `late.x`/`late.own` filled in once made). Panel ids are this panel's own; keys as one mask (held HOLD_MS
+  between changes), buttons one at a time, encoders by detents; screen RGB565 host order; MASTER the page's.
+  **No lights and no saves**: mv_websim.c does not give them out yet (TODO there); its storage is RAM, so
+  programs saved last while it plays, as on its own page. Latency: the ring stays near full, ~46 ms.
+- `self-start.mjs` knows `wsim_midi`. Neither starts by itself; both take MIDI notes.
+- Checked: in Node (silent idle, a key sounds, MIDI notes, screen; one 6.7 ms block for M-vance at the first
+  fill); on the page: both load, draw, open LFO pages, PRESETS changes the program, both at once; all 35
+  load. Not listened to.
+
 ## All builds updated; h1 added, built here (2026-11-26)
 
 36 repos are followed now; **33 builds play in the app**.

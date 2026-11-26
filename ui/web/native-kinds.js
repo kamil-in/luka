@@ -14,6 +14,7 @@
 //             demake      demake's (w_*: a 4-bit screen and palette, a 64 KiB store)
 //             viscera     viscera's tape looper (control() takes the whole panel, projects in slots)
 //             mpyre       M-PYRE's (emu_*: a UI step the host calls, songs as projects, a sound pack)
+//             wsim        bk40-home's web simulators (wsim_*: main() under Asyncify; M-Vsynth2, M-vance)
 //             preview     a sound engine for an editor, no screen or panel (SLOOP)
 //             unknown
 //   style   the adapter of native-worklet.js that plays it, or null (listed only)
@@ -36,6 +37,8 @@ export function identify(exports, imports = []) {
     return { family: "demake", style: "demake", note: null };
   if (has("init", "control", "paint", "screen", "leds", "render", "output_buffer", "project", "device"))
     return { family: "viscera", style: "viscera", note: null };
+  if (has("wsim_pull", "wsim_fb", "wsim_keys", "wsim_btn", "wsim_enc", "main", "asyncify_start_unwind"))
+    return { family: "wsim", style: "wsim", note: null };
   if (any("preview_") && !has("web_fb"))
     return { family: "preview", style: null, note: "a sound engine without screen or panel: nothing to play with" };
 

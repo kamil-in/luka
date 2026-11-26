@@ -31,7 +31,7 @@ No install, no account, nothing to download first. Best in **Chrome or Edge** on
 ## Start jamming in a minute
 
 1. **Open** [kamil-in.github.io/luka](https://kamil-in.github.io/luka/).
-2. Click the **menu button** (three lines, top left) to open the list of firmwares. There are 33.
+2. Click the **menu button** (three lines, top left) to open the list of firmwares. There are 35.
 3. Press **load** next to one. It fills the first free screen and starts.
    Some firmwares **play by themselves** the moment they start (the ambient and generative ones); Luka loads those
    **stopped** so they do not surprise you. Press **play** on their screen when you want them.
@@ -92,14 +92,14 @@ first one, the firmware's volume) isn't at zero.
 
 ## What to play
 
-Thirty-three firmwares from the FM-1 community, each with its own character. A few ideas to start (each description is a
+Thirty-five firmwares from the FM-1 community, each with its own character. A few ideas to start (each description is a
 summary of what that project says about itself; follow the link in [Credits](#credits) for the real thing):
 
 | If you want... | Try |
 |---|---|
 | **Ambient beds and drones** | AMB-1, Niagara Drift, FRASIL (frozen drones with shimmer reverb), Aisling (dream-harp soundscapes), SATIE-1 (Satie-inspired generative piano), GR!MM, Arctic Scream, Demake (an ambient lofi machine on pedal recordings) |
 | **Beats and bass** | X0X (a 303 bass synth with 808 and 909 drum machines), FMini-1 (a 4-track groovebox), Melodee (909 drums, a sequencer), ATEK 303, LOAF BREAKER (hardcore kicks and chopped breaks), PERF-1 (a groovebox that plays itself while you steer it), JAMTRACK (a backing band that follows your chords) |
-| **A lead to play over it** | MONK-1 (a velocity-sensitive monophonic synth that talks), FiMba-1 (an electric kalimba), ZEN-1 (koto, shakuhachi, erhu, with microtones), S1Vave and OberVave (analogue-modelling synths), OG Synth, JIANT, Golana, M-PYRE (a rock and metal riffbox with guitar samples), Chimera Vocal (a singing human voice), h1 (sixteen instruments, each an animated picture you play) |
+| **A lead to play over it** | MONK-1 (a velocity-sensitive monophonic synth that talks), FiMba-1 (an electric kalimba), ZEN-1 (koto, shakuhachi, erhu, with microtones), S1Vave and OberVave (analogue-modelling synths), OG Synth, JIANT, Golana, M-PYRE (a rock and metal riffbox with guitar samples), Chimera Vocal (a singing human voice), h1 (sixteen instruments, each an animated picture you play), M-Vsynth2 (Synth1's sound, through its open-source recreation Synth2), JT-80x0 (M-vance: a JP-8000-style virtual analog with Super Saw) |
 | **Something to wander through** | Nachtfahrt (a Berlin-school night drive), Loom (a generative pattern weaver), Mutable Dreams (over 50 oscillator models), CoralFlower (a live arpeggiator), Skiff (a modular patch environment), Blop (one-finger chords and an aquarium), viscera (a four-track tape looper) |
 
 <details>
@@ -194,10 +194,12 @@ manuals, and support them.
 | Golana | Gadlele | GPL-3.0 | [Gadlele/Golana](https://github.com/Gadlele/Golana) |
 | GR!MM | GRiMMBIENT | GPL-3.0 | [GRiMMBIENT/grimm](https://github.com/GRiMMBIENT/grimm) |
 | h1 (handy-1) | Jake Handy | MIT (fm1-base: MPL-2.0) | [jakehandy/h1](https://github.com/jakehandy/h1) |
+| JT-80x0 (formerly M-vance) | Kris (bk40-home) | GPL-3.0-only | [bk40-home/M-vance](https://github.com/bk40-home/M-vance) |
 | JAMTRACK | PhilipsKnobs | MIT | [Philip-Bos/jamtrack-fm1](https://github.com/Philip-Bos/jamtrack-fm1) |
 | JIANT | juanjiant-bit | GPL-3.0 | [juanjiant-bit/JIANT](https://github.com/juanjiant-bit/JIANT) |
 | LOAF BREAKER | FLEXOR | MPL-2.0 | [FLEXOR-R/loaf-breaker](https://github.com/FLEXOR-R/loaf-breaker) |
 | Loom | Charles Vestal | GPL-3.0 | [charlesvestal/fm1-loom](https://github.com/charlesvestal/fm1-loom) |
+| M-Vsynth2 | Kris (bk40-home), from François Chabloz's Synth2 | GPL-3.0-only (Synth2's parts: MIT) | [bk40-home/M-Vsynth2](https://github.com/bk40-home/M-Vsynth2) |
 | M-PYRE | History Of Sky | GPL-3.0 | [HistoryOfSky/m-pyre](https://github.com/HistoryOfSky/m-pyre) |
 | Melodee | Kerem Kilic ([@keremimo](https://github.com/keremimo)) | GPL-3.0 | [keremimo/melodee](https://github.com/keremimo/melodee) |
 | MONK-1 | Charles Vestal | GPL-3.0 | [charlesvestal/fm1-monk](https://github.com/charlesvestal/fm1-monk) |

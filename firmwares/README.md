@@ -1,6 +1,6 @@
 # FM-1 Community Firmwares Automation & Interface Documentation
 
-This directory contains the automated single-click tooling to clone, update, build, and document all 36 community firmwares for the M-VAVE FM-1 pocket synthesizer.
+This directory contains the automated single-click tooling to clone, update, build, and document all 38 community firmwares for the M-VAVE FM-1 pocket synthesizer.
 
 ## Single-Click Execution
 
@@ -17,11 +17,11 @@ You can run the entire workflow in **one click**:
 
 ### What the Script Does Automatically
 
-1. **Clones & Updates**: Loops through all 36 community repositories, clones any missing ones, fetches every branch (some builds come from `gh-pages`), switches to each repository's own default branch and fast-forwards it. Luka's own changes to a firmware (`patches/<id>/*.patch`) are taken off before the update and put back on after it.
+1. **Clones & Updates**: Loops through all 38 community repositories, clones any missing ones, fetches every branch (some builds come from `gh-pages`), switches to each repository's own default branch and fast-forwards it. Luka's own changes to a firmware (`patches/<id>/*.patch`) are taken off before the update and put back on after it.
 2. **Generates / Retrieves Native Web WASM**:
    - Executes repo build instructions if compilation tools (`emcc`, `clang`, `wasi-sdk`, `zig`) are installed on the host.
    - Reliably extracts and verifies the official native web WebAssembly artifact produced by the repo's instructions (from repository paths, build branches, or release artifacts).
-   - Places all 34 output WASM binaries in `firmwares/dist/`.
+   - Places all 36 output WASM binaries in `firmwares/dist/`.
 3. **Generates Full Interface Documentation**:
    - Dynamically reflects exported and imported WebAssembly functions from each binary.
    - Generates individual specification documents in `firmwares/docs/<firmware>.md`.
@@ -30,7 +30,7 @@ You can run the entire workflow in **one click**:
 
 ---
 
-## Repositories Covered (36 Firmwares)
+## Repositories Covered (38 Firmwares)
 
 | Firmware | Repository | Branch | Interface Style |
 | :--- | :--- | :--- | :--- |
@@ -70,6 +70,8 @@ You can run the entire workflow in **one click**:
 | **SLOOP 3** | [isod89/sloop3-fm1](https://github.com/isod89/sloop3-fm1) | `main` | none (no browser build) |
 | **JamesOS** | [aarongrando/JamesOS](https://github.com/aarongrando/JamesOS) | `main` | none (no browser build) |
 | **h1** | [jakehandy/h1](https://github.com/jakehandy/h1) | `main` | `x0x` (built here, see below) |
+| **M-Vsynth2** | [bk40-home/M-Vsynth2](https://github.com/bk40-home/M-Vsynth2) | `main` | `wsim` |
+| **JT-80x0** (formerly M-vance) | [bk40-home/M-vance](https://github.com/bk40-home/M-vance) | `main` | `wsim` |
 
 ### h1: built here, with a patch
 
@@ -92,9 +94,9 @@ firmwares/
 ├── build-firmwares.ps1           # Main PowerShell automation script
 ├── extract-artifacts.mjs         # Verified WASM artifact extraction & retrieval
 ├── generate-interface-docs.mjs   # WebAssembly reflection & markdown generator
-├── INTERFACES.md                 # Master interface specification and comparison catalog (36 firmwares)
+├── INTERFACES.md                 # Master interface specification and comparison catalog (38 firmwares)
 ├── README.md                     # This documentation
-├── docs/                         # Detailed interface specifications for all 36 firmwares
+├── docs/                         # Detailed interface specifications for all 38 firmwares
 │   ├── Arctic-scream-FM-1.md
 │   ├── CoralFlower.md
 │   ├── Felucca.md
@@ -119,7 +121,7 @@ firmwares/
 ├── patches/                      # Luka's own changes to a firmware, applied after each update (h1)
 │   └── h1/*.patch
 ├── dist/                         # Web native WASM binaries & machine-readable manifest
-│   ├── *.wasm (34 binaries)
+│   ├── *.wasm (36 binaries)
 │   └── manifest.json
 └── [cloned repositories: 21 firmware source repos]
 ```

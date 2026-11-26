@@ -32,6 +32,8 @@
       - JIANT (juanjiant-bit/JIANT)
       - Golana (Gadlele/Golana)
       - h1 (jakehandy/h1: built here for the browser, with Luka's patches from patches/h1/)
+      - M-Vsynth2 (bk40-home/M-Vsynth2)
+      - M-vance (bk40-home/M-vance, now named JT-80x0)
 
 .EXAMPLE
     .\build-firmwares.ps1
@@ -99,7 +101,11 @@ $repos = @(
     @{ Id = "sloop3-fm1"; Name = "SLOOP 3"; Url = "https://github.com/isod89/sloop3-fm1.git"; BuildScript = "" },
     @{ Id = "JamesOS"; Name = "JamesOS"; Url = "https://github.com/aarongrando/JamesOS.git"; BuildScript = "" },
     # (publishes no browser build: fm1-base's web emulator is built here, which needs emcc; see patches/h1/)
-    @{ Id = "h1"; Name = "h1"; Url = "https://github.com/jakehandy/h1.git"; BuildScript = "build.sh"; BuildArgs = "--web" }
+    @{ Id = "h1"; Name = "h1"; Url = "https://github.com/jakehandy/h1.git"; BuildScript = "build.sh"; BuildArgs = "--web" },
+    # (their simulators are committed in docs/sim/, which is what their sites publish; sim/build.sh would
+    # rewrite those committed files, and the next update could not fast-forward, so it is not run here)
+    @{ Id = "M-Vsynth2"; Name = "M-Vsynth2"; Url = "https://github.com/bk40-home/M-Vsynth2.git"; BuildScript = "" },
+    @{ Id = "M-vance"; Name = "JT-80x0 (M-vance)"; Url = "https://github.com/bk40-home/M-vance.git"; BuildScript = "" }
 )
 
 # Luka's own changes to a firmware, kept as patches/<Id>/*.patch: taken off before an update, so the

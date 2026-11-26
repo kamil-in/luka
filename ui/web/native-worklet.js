@@ -38,6 +38,8 @@
 //              It has its own small path: see `Mpyre` below.
 //   "demake"   demake's (web/dmk_web.c): see `Demake` below.
 //   "viscera"  viscera's tape looper (its site's emulator): see `Viscera` below.
+//   "wsim"     bk40-home's web simulators (M-Vsynth2, M-vance: sim/mv_websim.c), Emscripten
+//              builds for their own page: see `Wsim` below.
 //
 // They differ in names more than in kind, so there is one adapter, which asks a build what
 // it has (`pick`); `style` (ui/web/native-kinds.js) only settles the few things that differ.
@@ -474,8 +476,100 @@ class Viscera {
   }
 }
 
+/// bk40-home's web simulators (sim/mv_websim.c in M-Vsynth2 and M-vance): Emscripten builds made
+/// for their own page, whose generated script this stands in for. The firmware's main() never
+/// returns: its loop fills an audio ring (2048 frames) while there is room, then sleeps
+/// (`emscripten_sleep`), which Asyncify unwinds back to here; the next run rewinds into it.
+/// wsim_pull takes the sound out (stereo, interleaved). The panel goes in by this panel's own
+/// ids, as they are: the keys as one mask, buttons one at a time, encoder detents. The screen is
+/// RGB565 in the host's byte order. Their lights and storage are not given out yet (both TODO in
+/// mv_websim.c): nothing lights, and what is saved lasts while it plays, as on their own page.
+/// MASTER is the page's (output gain).
+class Wsim {
+  static NEEDS = ["main", "malloc", "wsim_pull", "wsim_fb", "wsim_keys", "wsim_btn", "wsim_enc", "__wasm_call_ctors",
+    "asyncify_start_unwind", "asyncify_stop_unwind", "asyncify_start_rewind", "asyncify_stop_rewind", "asyncify_get_state"];
+  static STACK = 65536; // (Asyncify's saved stack: their script gives it 4 KiB)
+
+  /// What the build asks of its host: the sleep that yields, more memory. `late.own`: this
+  /// adapter, once made, and `late.x` the instance's exports (the imports are made before either).
+  static imports(imports, late) {
+    Object.assign(imports.env ??= {}, {
+      emscripten_sleep: () => late.own.yieldNow(),
+      emscripten_resize_heap: (size) => {
+        const mem = late.x.memory, more = Math.ceil(((size >>> 0) - mem.buffer.byteLength) / 65536);
+        try { if (more > 0) mem.grow(more); return 1; } catch { return 0; }
+      },
+    });
+  }
+
+  constructor(_module, x, _save, now) {
+    this.x = x;
+    this.now = now;
+    this.restored = false;
+    x.__wasm_call_ctors();
+    this.data = x.malloc(8 + Wsim.STACK);
+    this.started = this.rewinding = false;
+    this.buf = x.malloc(2 * 4 * 1024);
+    this.keys = 0;
+    this.queue = []; // (key changes, each held HOLD_MS before the next: the loop reads the mask once a pass)
+    this.nextOk = 0;
+    this.gain = 800 / 1023;
+    this.midi = x.wsim_midi ? (s, a, b) => x.wsim_midi(s, a, b) : null;
+  }
+
+  /// The sleep: the first call unwinds the loop back to run(); the call made after a rewind ends
+  /// the rewind and returns into the loop.
+  yieldNow() {
+    const x = this.x;
+    if (this.rewinding) { x.asyncify_stop_rewind(); this.rewinding = false; return; }
+    const h = new Int32Array(x.memory.buffer, this.data, 2);
+    h[0] = this.data + 8;
+    h[1] = this.data + 8 + Wsim.STACK;
+    x.asyncify_start_unwind(this.data);
+  }
+
+  /// One pass of the firmware's loop: its input taken, its ring filled while there is room.
+  run() {
+    const x = this.x;
+    if (this.started) { this.rewinding = true; x.asyncify_start_rewind(this.data); }
+    this.started = true;
+    x.main(0, 0);
+    if (x.asyncify_get_state() === 1) x.asyncify_stop_unwind();
+  }
+
+  render(left, right) {
+    const x = this.x, n = left.length;
+    if (this.queue.length && this.now() - this.nextOk >= 0) { this.queue.shift()(); this.nextOk = this.now() + HOLD_MS; }
+    let got = x.wsim_pull(this.buf, n);
+    if (got < n) { this.run(); got += x.wsim_pull(this.buf + 8 * got, n - got); }
+    else this.run(); // (a pass a block: the ring stays full, each pass renders a little, input goes in soon)
+    const o = new Float32Array(x.memory.buffer, this.buf, 2 * n), g = this.gain;
+    for (let i = 0; i < n; i++) {
+      left[i] = i < got ? o[2 * i] * g : 0;
+      if (right) right[i] = i < got ? o[2 * i + 1] * g : 0;
+    }
+  }
+
+  input(i) {
+    const x = this.x;
+    if (i.type === "key" && i.id >= 14) {
+      const bit = 1 << (i.id - 14);
+      this.keys = i.down ? this.keys | bit : this.keys & ~bit;
+      const now = this.keys >>> 0;
+      this.queue.push(() => x.wsim_keys(now));
+    } else if (i.type === "key") x.wsim_btn(i.id, i.down ? 1 : 0); // (it keeps the edges itself)
+    else if (i.type === "encoder") x.wsim_enc(i.id, i.clicks | 0);
+    else if (i.type === "analog" && i.channel === 4) this.gain = i.value / 1023;
+  }
+
+  screen() { return { fb: new Uint16Array(this.x.memory.buffer, this.x.wsim_fb(), 240 * 240), swap: false }; }
+  levels() { return null; }
+  stored() { return new Uint8Array(0); }
+  due() { return null; }
+}
+
 /// The builds with a path of their own (not the shared adapter below), by style.
-const OWN = { mpyre: Mpyre, demake: Demake, viscera: Viscera };
+const OWN = { mpyre: Mpyre, demake: Demake, viscera: Viscera, wsim: Wsim };
 
 class Native extends AudioWorkletProcessor {
   constructor() {
@@ -725,7 +819,10 @@ class Native extends AudioWorkletProcessor {
   startOwn(data, Own) {
     const module = new WebAssembly.Module(data.wasm), imports = {};
     for (const i of WebAssembly.Module.imports(module)) if (i.kind === "function") (imports[i.module] ??= {})[i.name] = () => 0;
+    const late = {}; // (a build whose imports call its adapter: made before it is)
+    if (Own.imports) Own.imports(imports, late);
     const x = new WebAssembly.Instance(module, imports).exports;
+    late.x = x;
     for (const need of Own.NEEDS)
       if (typeof x[need] !== "function") throw new Error(`this build has no ${need}: it is not of the kind expected`);
     if (x._initialize) x._initialize();
@@ -733,6 +830,7 @@ class Native extends AudioWorkletProcessor {
     this.paused = false;
     this.now = () => Math.round((currentTime - this.idle) * 1000);
     const mp = new Own(module, x, data.save || null, () => this.now());
+    late.own = mp;
     const restored = !!mp.restored;
     this.x = x;
     this.mp = mp;

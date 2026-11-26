@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-26T04:27:17.509Z",
-  "count": 36,
+  "generated_at": "2026-11-26T04:43:51.697Z",
+  "count": 38,
   "builds": [
     {
       "id": "fmini-1",
@@ -2143,6 +2143,102 @@
       "imports": [
         "wasi_snapshot_preview1.clock_time_get",
         "wasi_snapshot_preview1.fd_write"
+      ]
+    },
+    {
+      "id": "M-Vsynth2",
+      "name": "M-Vsynth2",
+      "repo": "bk40-home/M-Vsynth2",
+      "url": "https://github.com/bk40-home/M-Vsynth2",
+      "author": "Kris (bk40-home)",
+      "license": "GPL-3.0-only (Synth2 parts: MIT)",
+      "branch": "main",
+      "commit": "2214fc0634e40c9417030e55fef13ccdfb04ee70",
+      "style": "wsim",
+      "file": "M-Vsynth2.wasm",
+      "size": 396612,
+      "sha256": "f88dc34b58d2e5e2c17d1ae3eaa470841210d6d6104b03df346fe3320a97acab",
+      "available": true,
+      "exports_count": 17,
+      "imports_count": 4,
+      "exports": [
+        "asyncify_get_state",
+        "asyncify_start_rewind",
+        "asyncify_start_unwind",
+        "asyncify_stop_rewind",
+        "asyncify_stop_unwind",
+        "emscripten_stack_get_current",
+        "free",
+        "main",
+        "malloc",
+        "setThrew",
+        "wsim_btn",
+        "wsim_enc",
+        "wsim_fb",
+        "wsim_keys",
+        "wsim_midi",
+        "wsim_pull",
+        "wsim_sysex_in"
+      ],
+      "imports": [
+        "env.emscripten_resize_heap",
+        "env.emscripten_sleep",
+        "env.wsim_midi_out",
+        "env.wsim_sysex_out"
+      ]
+    },
+    {
+      "id": "M-vance",
+      "name": "JT-80x0 (M-vance)",
+      "repo": "bk40-home/M-vance",
+      "url": "https://github.com/bk40-home/M-vance",
+      "author": "Kris (bk40-home)",
+      "license": "GPL-3.0-only",
+      "branch": "main",
+      "commit": "1ce52f804faac2bc0801ef9dd0d1ac271934fdef",
+      "style": "wsim",
+      "file": "M-vance.wasm",
+      "size": 390596,
+      "sha256": "34e6d1f88ef9ea4e4fca76855d693d01f0a684c77227fc269665e3a8402a2d60",
+      "available": true,
+      "exports_count": 29,
+      "imports_count": 4,
+      "exports": [
+        "asyncify_get_state",
+        "asyncify_start_rewind",
+        "asyncify_start_unwind",
+        "asyncify_stop_rewind",
+        "asyncify_stop_unwind",
+        "dynCall_vi",
+        "dynCall_viiii",
+        "dynCall_viiiiiii",
+        "emscripten_stack_get_current",
+        "free",
+        "main",
+        "malloc",
+        "setThrew",
+        "wsim_btn",
+        "wsim_enc",
+        "wsim_fb",
+        "wsim_goto",
+        "wsim_keys",
+        "wsim_live_page",
+        "wsim_midi",
+        "wsim_npages",
+        "wsim_page_btn",
+        "wsim_page_key",
+        "wsim_page_sub",
+        "wsim_page_tile",
+        "wsim_page_title",
+        "wsim_pull",
+        "wsim_sysex_in",
+        "wsim_tile"
+      ],
+      "imports": [
+        "env.emscripten_resize_heap",
+        "env.emscripten_sleep",
+        "env.wsim_midi_out",
+        "env.wsim_sysex_out"
       ]
     }
   ]

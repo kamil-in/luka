@@ -228,6 +228,20 @@ const ARTIFACT_MAP = [
     type: 'local',
     path: 'app/build/emu/app.wasm',
   },
+  {
+    // (its site's simulator, committed: docs/sim/ is what its Pages publishes)
+    id: 'M-Vsynth2',
+    name: 'M-Vsynth2',
+    type: 'local',
+    path: 'docs/sim/mvsynth2.wasm',
+  },
+  {
+    // (as M-Vsynth2's; renamed JT-80x0, same repository)
+    id: 'M-vance',
+    name: 'JT-80x0 (M-vance)',
+    type: 'local',
+    path: 'docs/sim/mvance.wasm',
+  },
 ];
 
 // A WebAssembly custom section (engines skip it): how a build carries what its page inlined

@@ -491,6 +491,32 @@ const FIRMWARES = [
     buildScript: 'build.sh --web (fm1-base tools/build.py app --web), with Luka\'s patches/h1/: it publishes no browser build',
     compiler: 'Emscripten (emcc)',
   },
+  {
+    id: 'M-Vsynth2',
+    name: 'M-Vsynth2',
+    repo: 'bk40-home/M-Vsynth2',
+    url: 'https://github.com/bk40-home/M-Vsynth2',
+    author: 'Kris (bk40-home)',
+    license: 'GPL-3.0-only (Synth2 parts: MIT)',
+    style: 'wsim',
+    description: 'Synth2, the open-source recreation of Synth1, on eight voices: two oscillators and a sub, five filters, two LFOs, distortions and phasers, EQ, delay, chorus and Synth1\'s arpeggiator. It plays Synth1\'s .sy1 patches, with the Synth2 Factory bank built in.',
+    sourceShim: 'sim/mv_websim.c (the platform under Emscripten Asyncify)',
+    buildScript: 'sim/build.sh; published build: docs/sim/mvsynth2.wasm (committed, served by its Pages)',
+    compiler: 'Emscripten (emcc, -sASYNCIFY)',
+  },
+  {
+    id: 'M-vance',
+    name: 'JT-80x0 (M-vance)',
+    repo: 'bk40-home/M-vance',
+    url: 'https://github.com/bk40-home/M-vance',
+    author: 'Kris (bk40-home)',
+    license: 'GPL-3.0-only',
+    style: 'wsim',
+    description: 'A JP-8000/8080-style virtual analog on eight voices: the JT-8000 engine ported to the FM-1, with Super Saw, the JP filter, multi-effects, delay, a plate reverb, an arpeggiator, a two-track sequencer and 64 programs. Formerly named M-vance.',
+    sourceShim: 'sim/mv_websim.c (the platform under Emscripten Asyncify)',
+    buildScript: 'sim/build.sh; published build: docs/sim/mvance.wasm (committed, served by its Pages)',
+    compiler: 'Emscripten (emcc, -sASYNCIFY)',
+  },
 ];
 
 // Well-known function descriptors
@@ -746,6 +772,28 @@ const FUNCTION_SPECS = {
   asyncify_start_rewind: { category: 'Asyncify', desc: 'Binaryen Asyncify: restore execution context and rewind stack', params: 'void* data' },
   asyncify_stop_rewind: { category: 'Asyncify', desc: 'Binaryen Asyncify: complete stack rewinding' },
   asyncify_get_state: { category: 'Asyncify', desc: 'Binaryen Asyncify: query coroutine unwind/rewind state', returns: 'uint32_t' },
+
+  // bk40-home's web simulators (sim/mv_websim.c: M-Vsynth2, M-vance)
+  main: { category: 'Lifecycle', desc: 'The firmware\'s main loop (never returns): runs until it sleeps (emscripten_sleep), unwound by Asyncify; called again after asyncify_start_rewind to go on', params: 'int argc, char** argv', returns: 'int' },
+  __wasm_call_ctors: { category: 'Lifecycle', desc: 'Emscripten: run static constructors, once before main' },
+  malloc: { category: 'Runtime', desc: 'Allocate linear memory (the host\'s Asyncify data and audio buffer)', params: 'size_t n', returns: 'void*' },
+  free: { category: 'Runtime', desc: 'Release memory from malloc', params: 'void* p' },
+  wsim_pull: { category: 'Audio', desc: 'Copy up to max_frames stereo frames (interleaved L R, float -1..1) out of the 2048-frame ring; returns the frames copied', params: 'float* dst, int max_frames', returns: 'int' },
+  wsim_fb: { category: 'Display', desc: 'Pointer to the 240x240 RGB565 framebuffer (host byte order)', returns: 'uint16_t*' },
+  wsim_keys: { category: 'Input', desc: 'The 27 note keys as one mask (bit 0 = F3)', params: 'uint32_t mask' },
+  wsim_btn: { category: 'Input', desc: 'A panel button held or let go, by the panel\'s ids (0 OCT-, 1 OCT+, 2 FX .. 13 REC)', params: 'int id, int down' },
+  wsim_enc: { category: 'Input', desc: 'An encoder turned, in detents (+ clockwise); ids 0 SELECT, 1 ALGORITHM, 2..5 KNOB 1..4, 6 PRESETS', params: 'int id, int detents' },
+  wsim_midi: { category: 'MIDI', desc: 'One MIDI message in, as over USB', params: 'int status, int data1, int data2' },
+  wsim_sysex_in: { category: 'MIDI', desc: 'One whole SysEx message in (F0 .. F7): the program transfer', params: 'const uint8_t* p, int n' },
+  wsim_npages: { category: 'Editor', desc: 'M-vance: how many editor pages there are (for its own page\'s editor)', returns: 'int' },
+  wsim_page_tile: { category: 'Editor', desc: 'M-vance: draw an editor page\'s tile (for its own page\'s editor)' },
+  wsim_page_title: { category: 'Editor', desc: 'M-vance: an editor page\'s title (for its own page\'s editor)' },
+  wsim_page_btn: { category: 'Editor', desc: 'M-vance: the button that opens an editor page' },
+  wsim_page_sub: { category: 'Editor', desc: 'M-vance: an editor page\'s place among its button\'s pages' },
+  wsim_live_page: { category: 'Editor', desc: 'M-vance: the page the firmware shows now' },
+  wsim_page_key: { category: 'Editor', desc: 'M-vance: an editor page\'s key' },
+  wsim_tile: { category: 'Editor', desc: 'M-vance: draw a tile (for its own page\'s editor)' },
+  wsim_goto: { category: 'Editor', desc: 'M-vance: go to an editor page' },
 };
 
 function getCommit(repoDir) {
