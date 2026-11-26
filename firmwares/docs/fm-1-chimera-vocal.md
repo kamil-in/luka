@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `base/web/emu/emu_web.c (fm1-base)`  
 > **Build Instructions**: `published build: https://shan-sherif.github.io/fm-1-chimera-vocal/emu/app.wasm (its Pages workflow)`  
-> **Binary Artifact**: `dist/fm-1-chimera-vocal.wasm` (373.5 KB, SHA-256: `e65e79842ffa72e3...`)  
+> **Binary Artifact**: `dist/fm-1-chimera-vocal.wasm` (382.3 KB, SHA-256: `fa0e260794f09ab8...`)  
 
 ## Overview
 

@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `base/ (fm1-base web shim)`  
 > **Build Instructions**: `build.sh; published build: https://flexor-r.github.io/loaf-breaker/emu/app.wasm (made by its Pages workflow)`  
-> **Binary Artifact**: `dist/loaf-breaker.wasm` (825.6 KB, SHA-256: `c2cbb7fe73d01eab...`)  
+> **Binary Artifact**: `dist/loaf-breaker.wasm` (825.2 KB, SHA-256: `ad32134dc307adaf...`)  
 
 ## Overview
 

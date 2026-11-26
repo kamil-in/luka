@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `patches/ (applied to the Charles Vestal firmware template); browser page app/web/emu/`  
 > **Build Instructions**: `published build: https://ogsynth.cc/emulator/app.wasm`  
-> **Binary Artifact**: `dist/OG-Synth-source.wasm` (990.6 KB, SHA-256: `fc9906418286719e...`)  
+> **Binary Artifact**: `dist/OG-Synth-source.wasm` (1063.4 KB, SHA-256: `1532593e4e18a644...`)  
 
 ## Overview
 
@@ -21,7 +21,7 @@ Sound-design synth: 16 engines (FM, VA, wavetable, phase distortion, physical mo
 | **Clock Model** | AudioWorklet frame pull; host calls render per audio block (128 frames / 2.9 ms) |
 | **Sample Rate** | 44,100 Hz stereo interleaved or split float32 arrays |
 | **Display Resolution** | 240 x 240 pixels (RGB565 in device byte order) |
-| **Exported Functions** | 116 exported WebAssembly functions |
+| **Exported Functions** | 164 exported WebAssembly functions |
 | **Imported Symbols** | `wasi_snapshot_preview1.clock_time_get` |
 
 ## Exported Interface Functions
@@ -38,62 +38,97 @@ Sound-design synth: 16 engines (FM, VA, wavetable, phase distortion, physical mo
 | Function | Signature / Return | Description |
 | :--- | :--- | :--- |
 | `ogs_ap` | `void` | Exported WebAssembly runtime function |
+| `ogs_arset` | `void` | Exported WebAssembly runtime function |
 | `ogs_audit` | `void` | Exported WebAssembly runtime function |
+| `ogs_bpct` | `void` | Exported WebAssembly runtime function |
 | `ogs_budget` | `void` | Exported WebAssembly runtime function |
+| `ogs_chaos` | `void` | Exported WebAssembly runtime function |
 | `ogs_chtxt` | `void` | Exported WebAssembly runtime function |
 | `ogs_cz_area` | `void` | Exported WebAssembly runtime function |
 | `ogs_cz_size` | `void` | Exported WebAssembly runtime function |
 | `ogs_def` | `void` | Exported WebAssembly runtime function |
 | `ogs_dk` | `void` | Exported WebAssembly runtime function |
 | `ogs_dname` | `void` | Exported WebAssembly runtime function |
+| `ogs_dtrim` | `void` | Exported WebAssembly runtime function |
 | `ogs_dx_out` | `void` | Exported WebAssembly runtime function |
+| `ogs_dxon` | `void` | Exported WebAssembly runtime function |
+| `ogs_edinfo` | `void` | Exported WebAssembly runtime function |
 | `ogs_edited` | `void` | Exported WebAssembly runtime function |
 | `ogs_eng` | `void` | Exported WebAssembly runtime function |
 | `ogs_eqdb` | `void` | Exported WebAssembly runtime function |
+| `ogs_fsave` | `void` | Exported WebAssembly runtime function |
 | `ogs_fx` | `void` | Exported WebAssembly runtime function |
 | `ogs_fxdirty` | `void` | Exported WebAssembly runtime function |
 | `ogs_fxlo` | `void` | Exported WebAssembly runtime function |
 | `ogs_fxn` | `void` | Exported WebAssembly runtime function |
 | `ogs_fxp` | `void` | Exported WebAssembly runtime function |
 | `ogs_fxset` | `void` | Exported WebAssembly runtime function |
+| `ogs_fxslot` | `void` | Exported WebAssembly runtime function |
+| `ogs_fxsync` | `void` | Exported WebAssembly runtime function |
 | `ogs_fxui` | `void` | Exported WebAssembly runtime function |
 | `ogs_fxxp` | `void` | Exported WebAssembly runtime function |
 | `ogs_g180` | `void` | Exported WebAssembly runtime function |
+| `ogs_gapply` | `void` | Exported WebAssembly runtime function |
 | `ogs_glob` | `void` | Exported WebAssembly runtime function |
 | `ogs_glob_save` | `void` | Exported WebAssembly runtime function |
+| `ogs_goto` | `void` | Exported WebAssembly runtime function |
 | `ogs_gp_view` | `void` | Exported WebAssembly runtime function |
 | `ogs_grp` | `void` | Exported WebAssembly runtime function |
 | `ogs_gset` | `void` | Exported WebAssembly runtime function |
+| `ogs_idxf` | `void` | Exported WebAssembly runtime function |
 | `ogs_knob_reset` | `void` | Exported WebAssembly runtime function |
 | `ogs_label` | `void` | Exported WebAssembly runtime function |
+| `ogs_listed` | `void` | Exported WebAssembly runtime function |
 | `ogs_load` | `void` | Exported WebAssembly runtime function |
 | `ogs_lrn` | `void` | Exported WebAssembly runtime function |
 | `ogs_mac` | `void` | Exported WebAssembly runtime function |
 | `ogs_master` | `void` | Exported WebAssembly runtime function |
+| `ogs_mcx` | `void` | Exported WebAssembly runtime function |
 | `ogs_mfx` | `void` | Exported WebAssembly runtime function |
 | `ogs_mfxa` | `void` | Exported WebAssembly runtime function |
 | `ogs_mg_render` | `void` | Exported WebAssembly runtime function |
+| `ogs_mget` | `void` | Exported WebAssembly runtime function |
+| `ogs_mheap` | `void` | Exported WebAssembly runtime function |
 | `ogs_midi_non` | `void` | Exported WebAssembly runtime function |
+| `ogs_mnd` | `void` | Exported WebAssembly runtime function |
+| `ogs_mp` | `void` | Exported WebAssembly runtime function |
+| `ogs_mpp` | `void` | Exported WebAssembly runtime function |
 | `ogs_msend` | `void` | Exported WebAssembly runtime function |
+| `ogs_mset` | `void` | Exported WebAssembly runtime function |
 | `ogs_msg` | `void` | Exported WebAssembly runtime function |
+| `ogs_msync` | `void` | Exported WebAssembly runtime function |
 | `ogs_mt_held` | `void` | Exported WebAssembly runtime function |
+| `ogs_mthn` | `void` | Exported WebAssembly runtime function |
 | `ogs_mtl` | `void` | Exported WebAssembly runtime function |
 | `ogs_mw` | `void` | Exported WebAssembly runtime function |
+| `ogs_mwet` | `void` | Exported WebAssembly runtime function |
 | `ogs_mx` | `void` | Exported WebAssembly runtime function |
+| `ogs_mxe` | `void` | Exported WebAssembly runtime function |
+| `ogs_mxp` | `void` | Exported WebAssembly runtime function |
 | `ogs_nfact` | `void` | Exported WebAssembly runtime function |
 | `ogs_np` | `void` | Exported WebAssembly runtime function |
 | `ogs_nt` | `void` | Exported WebAssembly runtime function |
+| `ogs_oct` | `void` | Exported WebAssembly runtime function |
 | `ogs_old180` | `void` | Exported WebAssembly runtime function |
 | `ogs_out_old` | `void` | Exported WebAssembly runtime function |
 | `ogs_ovl` | `void` | Exported WebAssembly runtime function |
 | `ogs_p` | `void` | Exported WebAssembly runtime function |
 | `ogs_page` | `void` | Exported WebAssembly runtime function |
+| `ogs_pal` | `void` | Exported WebAssembly runtime function |
+| `ogs_pdef` | `void` | Exported WebAssembly runtime function |
 | `ogs_pf` | `void` | Exported WebAssembly runtime function |
 | `ogs_pgname` | `void` | Exported WebAssembly runtime function |
+| `ogs_pk` | `void` | Exported WebAssembly runtime function |
 | `ogs_pname` | `void` | Exported WebAssembly runtime function |
+| `ogs_pput` | `void` | Exported WebAssembly runtime function |
+| `ogs_pred` | `void` | Exported WebAssembly runtime function |
+| `ogs_pred_el` | `void` | Exported WebAssembly runtime function |
+| `ogs_pred_tt` | `void` | Exported WebAssembly runtime function |
 | `ogs_preset` | `void` | Exported WebAssembly runtime function |
 | `ogs_pset` | `void` | Exported WebAssembly runtime function |
 | `ogs_retrig` | `void` | Exported WebAssembly runtime function |
+| `ogs_rs` | `void` | Exported WebAssembly runtime function |
+| `ogs_scdbg` | `void` | Exported WebAssembly runtime function |
 | `ogs_semi` | `void` | Exported WebAssembly runtime function |
 | `ogs_sounding` | `void` | Exported WebAssembly runtime function |
 | `ogs_splash_skip` | `void` | Exported WebAssembly runtime function |
@@ -101,8 +136,10 @@ Sound-design synth: 16 engines (FM, VA, wavetable, phase distortion, physical mo
 | `ogs_sq_flash` | `void` | Exported WebAssembly runtime function |
 | `ogs_sq_lp` | `void` | Exported WebAssembly runtime function |
 | `ogs_sq_lpset` | `void` | Exported WebAssembly runtime function |
+| `ogs_sq_store` | `void` | Exported WebAssembly runtime function |
 | `ogs_sqn` | `void` | Exported WebAssembly runtime function |
 | `ogs_sqn_set` | `void` | Exported WebAssembly runtime function |
+| `ogs_ssave` | `void` | Exported WebAssembly runtime function |
 | `ogs_sxo` | `void` | Exported WebAssembly runtime function |
 | `ogs_sxo_n` | `void` | Exported WebAssembly runtime function |
 | `ogs_sysex` | `void` | Exported WebAssembly runtime function |
@@ -110,12 +147,23 @@ Sound-design synth: 16 engines (FM, VA, wavetable, phase distortion, physical mo
 | `ogs_syx_area` | `void` | Exported WebAssembly runtime function |
 | `ogs_syx_gen` | `void` | Exported WebAssembly runtime function |
 | `ogs_syx_size` | `void` | Exported WebAssembly runtime function |
+| `ogs_tnt` | `void` | Exported WebAssembly runtime function |
 | `ogs_tw` | `void` | Exported WebAssembly runtime function |
+| `ogs_ubase` | `void` | Exported WebAssembly runtime function |
+| `ogs_udel` | `void` | Exported WebAssembly runtime function |
+| `ogs_ufree` | `void` | Exported WebAssembly runtime function |
+| `ogs_uid` | `void` | Exported WebAssembly runtime function |
+| `ogs_ulen` | `void` | Exported WebAssembly runtime function |
+| `ogs_usave` | `void` | Exported WebAssembly runtime function |
 | `ogs_vsemi` | `void` | Exported WebAssembly runtime function |
 | `ogs_vtext` | `void` | Exported WebAssembly runtime function |
 | `ogs_west_hq` | `void` | Exported WebAssembly runtime function |
 | `ogs_wt_frame` | `void` | Exported WebAssembly runtime function |
 | `ogs_wt_info` | `void` | Exported WebAssembly runtime function |
+| `ogs_wtm` | `void` | Exported WebAssembly runtime function |
+| `ogs_wtnu` | `void` | Exported WebAssembly runtime function |
+| `ogs_wton` | `void` | Exported WebAssembly runtime function |
+| `ogs_wtu_n` | `void` | Exported WebAssembly runtime function |
 | `ogs_xt` | `void` | Exported WebAssembly runtime function |
 | `ogs_xtset` | `void` | Exported WebAssembly runtime function |
 

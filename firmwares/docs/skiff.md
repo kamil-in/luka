@@ -6,7 +6,7 @@
 > **Interface Family**: `felucca`  
 > **Source Shim**: `web/emu/felucca_web.c`  
 > **Build Instructions**: `web/emu/build.sh`  
-> **Binary Artifact**: `dist/skiff.wasm` (1060.3 KB, SHA-256: `f6d161b7dd13d126...`)  
+> **Binary Artifact**: `dist/skiff.wasm` (1060.6 KB, SHA-256: `a85a7d7b949653e0...`)  
 
 ## Overview
 

@@ -6,7 +6,7 @@
 > **Interface Family**: `x0x`  
 > **Source Shim**: `web/emu/loom_web.c`  
 > **Build Instructions**: `web/emu/build.sh`  
-> **Binary Artifact**: `dist/fm1-loom.wasm` (1096.0 KB, SHA-256: `9e2b85883ffe122d...`)  
+> **Binary Artifact**: `dist/fm1-loom.wasm` (1115.2 KB, SHA-256: `01e936ca3b764ffd...`)  
 
 ## Overview
 
@@ -21,7 +21,7 @@ Loom generative patch weaver and algorithmic pattern synthesizer for FM-1 with p
 | **Clock Model** | AudioWorklet frame pull; host calls render per audio block (128 frames / 2.9 ms) |
 | **Sample Rate** | 44,100 Hz stereo interleaved or split float32 arrays |
 | **Display Resolution** | 240 x 240 pixels (RGB565 in device byte order) |
-| **Exported Functions** | 35 exported WebAssembly functions |
+| **Exported Functions** | 52 exported WebAssembly functions |
 | **Imported Symbols** | `wasi_snapshot_preview1.clock_time_get`, `wasi_snapshot_preview1.environ_get`, `wasi_snapshot_preview1.environ_sizes_get`, `wasi_snapshot_preview1.fd_close`, `wasi_snapshot_preview1.fd_read`, `wasi_snapshot_preview1.fd_seek`, `wasi_snapshot_preview1.fd_write`, `wasi_snapshot_preview1.proc_exit` |
 
 ## Exported Interface Functions
@@ -32,6 +32,28 @@ Loom generative patch weaver and algorithmic pattern synthesizer for FM-1 with p
 | :--- | :--- | :--- |
 | `emscripten_stack_get_current` | `-> uint32_t` | Get current WebAssembly execution stack pointer |
 | `setThrew` | `(uint32_t th, uint32_t val)` | Emscripten exception unwind helper |
+
+### Other
+
+| Function | Signature / Return | Description |
+| :--- | :--- | :--- |
+| `loom_x_buf` | `void` | Exported WebAssembly runtime function |
+| `loom_x_buf_max` | `void` | Exported WebAssembly runtime function |
+| `loom_x_open` | `void` | Exported WebAssembly runtime function |
+| `loom_x_out` | `void` | Exported WebAssembly runtime function |
+| `loom_x_out_clear` | `void` | Exported WebAssembly runtime function |
+| `loom_x_out_len` | `void` | Exported WebAssembly runtime function |
+| `loom_x_playing` | `void` | Exported WebAssembly runtime function |
+| `loom_x_restore` | `void` | Exported WebAssembly runtime function |
+| `loom_x_scenes` | `void` | Exported WebAssembly runtime function |
+| `loom_x_slot` | `void` | Exported WebAssembly runtime function |
+| `loom_x_start` | `void` | Exported WebAssembly runtime function |
+| `loom_x_sx` | `void` | Exported WebAssembly runtime function |
+| `loom_x_sx_buf` | `void` | Exported WebAssembly runtime function |
+| `web_backup_buf` | `void` | Exported WebAssembly runtime function |
+| `web_backup_make` | `void` | Exported WebAssembly runtime function |
+| `web_backup_max` | `void` | Exported WebAssembly runtime function |
+| `web_backup_restore` | `void` | Exported WebAssembly runtime function |
 
 ### Display
 

@@ -6,7 +6,7 @@
 > **Interface Family**: `frasil`  
 > **Source Shim**: `app/web.c / base/web/emu/emu_web.c`  
 > **Build Instructions**: `build.sh / web AudioWorklet`  
-> **Binary Artifact**: `dist/frasil.wasm` (667.6 KB, SHA-256: `c2f07ea8deed56b2...`)  
+> **Binary Artifact**: `dist/frasil.wasm` (668.3 KB, SHA-256: `3e3f43b7f74bf7a3...`)  
 
 ## Overview
 
@@ -21,7 +21,7 @@ Drone textures frozen in motion: ambient drone synthesizer with shimmer reverb, 
 | **Clock Model** | AudioWorklet frame pull; host calls render per audio block (128 frames / 2.9 ms) |
 | **Sample Rate** | 44,100 Hz stereo interleaved or split float32 arrays |
 | **Display Resolution** | 240 x 240 pixels (RGB565 in device byte order) |
-| **Exported Functions** | 55 exported WebAssembly functions |
+| **Exported Functions** | 58 exported WebAssembly functions |
 | **Imported Symbols** | `wasi_snapshot_preview1.clock_time_get`, `wasi_snapshot_preview1.fd_write` |
 
 ## Exported Interface Functions
@@ -55,6 +55,14 @@ Drone textures frozen in motion: ambient drone synthesizer with shimmer reverb, 
 | `web_key` | `(uint32_t key, uint32_t vel, uint32_t at)` | Single key event with velocity and arrival timestamp (MONK-1) |
 | `web_keys` | `(uint32_t mask)` | 27-key keyboard state bitmask (bits 0..26 for notes F3..G5) |
 | `web_master` | `(uint32_t level)` | Set MASTER volume level (felucca: 0..1023, x0x: 0..4096) |
+
+### Other
+
+| Function | Signature / Return | Description |
+| :--- | :--- | :--- |
+| `web_cc` | `void` | Exported WebAssembly runtime function |
+| `web_lead_live` | `void` | Exported WebAssembly runtime function |
+| `web_lead_live_size` | `void` | Exported WebAssembly runtime function |
 
 ### Drones
 

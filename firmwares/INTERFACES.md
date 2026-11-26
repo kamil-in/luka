@@ -7,38 +7,38 @@ This document provides the complete interface documentation for all 35 community
 | Firmware | Repository | Style Family | Wasm Size | Exports | Detailed Spec |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **FMini-1** | [ruppert/fmini-1](https://github.com/ruppert/fmini-1) | `felucca` | 787.5 KB | 29 | [FMini-1 Interface](docs/fmini-1.md) |
-| **Melodee** | [keremimo/melodee](https://github.com/keremimo/melodee) | `melodee` | 1008.0 KB | 15 | [Melodee Interface](docs/melodee.md) |
-| **Skiff** | [illuminus5/skiff](https://github.com/illuminus5/skiff) | `felucca` | 1060.3 KB | 32 | [Skiff Interface](docs/skiff.md) |
+| **Melodee** | [keremimo/melodee](https://github.com/keremimo/melodee) | `melodee` | 1099.5 KB | 15 | [Melodee Interface](docs/melodee.md) |
+| **Skiff** | [illuminus5/skiff](https://github.com/illuminus5/skiff) | `felucca` | 1060.6 KB | 32 | [Skiff Interface](docs/skiff.md) |
 | **Felucca** | [hugelton/Felucca](https://github.com/hugelton/Felucca) | `felucca (emulated / felucca_web core)` | 787.5 KB | 29 | [Felucca Interface](docs/Felucca.md) |
 | **AMB-1** | [charlesvestal/fm1-amb](https://github.com/charlesvestal/fm1-amb) | `x0x` | 115.8 KB | 35 | [AMB-1 Interface](docs/fm1-amb.md) |
 | **OberVave** | [zvenson/obervave](https://github.com/zvenson/obervave) | `sim` | 235.1 KB | 28 | [OberVave Interface](docs/obervave.md) |
 | **GR!MM** | [GRiMMBIENT/grimm](https://github.com/GRiMMBIENT/grimm) | `asyncify` | 697.3 KB | 41 | [GR!MM Interface](docs/grimm.md) |
-| **X0X** | [charlesvestal/fm1-x0x](https://github.com/charlesvestal/fm1-x0x) | `x0x` | 533.0 KB | 34 | [X0X Interface](docs/fm1-x0x.md) |
+| **X0X** | [charlesvestal/fm1-x0x](https://github.com/charlesvestal/fm1-x0x) | `x0x` | 544.2 KB | 34 | [X0X Interface](docs/fm1-x0x.md) |
 | **Niagara Drift (OMNI)** | [evanyerburgh/niagara-drift](https://github.com/evanyerburgh/niagara-drift) | `x0x` | 373.0 KB | 30 | [Niagara Drift (OMNI) Interface](docs/niagara-drift.md) |
 | **MONK-1** | [charlesvestal/fm1-monk](https://github.com/charlesvestal/fm1-monk) | `x0x` | 254.6 KB | 29 | [MONK-1 Interface](docs/fm1-monk.md) |
-| **Loom** | [charlesvestal/fm1-loom](https://github.com/charlesvestal/fm1-loom) | `x0x` | 1096.0 KB | 35 | [Loom Interface](docs/fm1-loom.md) |
+| **Loom** | [charlesvestal/fm1-loom](https://github.com/charlesvestal/fm1-loom) | `x0x` | 1115.2 KB | 52 | [Loom Interface](docs/fm1-loom.md) |
 | **Mutable Dreams** | [kidbee85-beep/mutable-dreams](https://github.com/kidbee85-beep/mutable-dreams) | `dream` | 836.7 KB | 47 | [Mutable Dreams Interface](docs/mutable-dreams.md) |
-| **FRASIL** | [styvesgoupil/frasil](https://github.com/styvesgoupil/frasil) | `frasil` | 667.6 KB | 55 | [FRASIL Interface](docs/frasil.md) |
+| **FRASIL** | [styvesgoupil/frasil](https://github.com/styvesgoupil/frasil) | `frasil` | 668.3 KB | 58 | [FRASIL Interface](docs/frasil.md) |
 | **CoralFlower** | [FicusFicusov/CoralFlower](https://github.com/FicusFicusov/CoralFlower) | `coralflower` | 609.9 KB | 36 | [CoralFlower Interface](docs/CoralFlower.md) |
 | **S1Vave** | [AndrewGG88/S1Vave](https://github.com/AndrewGG88/S1Vave) | `sim` | 178.9 KB | 28 | [S1Vave Interface](docs/S1Vave.md) |
 | **ZEN-1** | [aceyprime/zen-1](https://github.com/aceyprime/zen-1) | `zen` | 635.6 KB | 46 | [ZEN-1 Interface](docs/zen-1.md) |
-| **Arctic Scream** | [PolarPatch/Arctic-scream-FM-1](https://github.com/PolarPatch/Arctic-scream-FM-1) | `asyncify` | 654.9 KB | 42 | [Arctic Scream Interface](docs/Arctic-scream-FM-1.md) |
+| **Arctic Scream** | [PolarPatch/Arctic-scream-FM-1](https://github.com/PolarPatch/Arctic-scream-FM-1) | `asyncify` | 652.8 KB | 42 | [Arctic Scream Interface](docs/Arctic-scream-FM-1.md) |
 | **FiMba-1** | [jadamsowers/fm1-fimba](https://github.com/jadamsowers/fm1-fimba) | `x0x` | 88.4 KB | 29 | [FiMba-1 Interface](docs/fm1-fimba.md) |
-| **Aisling** | [stephencummins/fm1-aisling](https://github.com/stephencummins/fm1-aisling) | `x0x` | 366.9 KB | 33 | [Aisling Interface](docs/fm1-aisling.md) |
+| **Aisling** | [stephencummins/fm1-aisling](https://github.com/stephencummins/fm1-aisling) | `x0x` | 412.6 KB | 33 | [Aisling Interface](docs/fm1-aisling.md) |
 | **SATIE-1** | [OCKM-STUDIO/SATIE-1](https://github.com/OCKM-STUDIO/SATIE-1) | `x0x` | 467.2 KB | 23 | [SATIE-1 Interface](docs/SATIE-1.md) |
 | **Nachtfahrt** | [FartyPants/fm1-nachtfahrt](https://github.com/FartyPants/fm1-nachtfahrt) | `x0x` | 447.4 KB | 27 | [Nachtfahrt Interface](docs/fm1-nachtfahrt.md) |
-| **OG Synth** | [mikejohnsonbeats/OG-Synth-source](https://github.com/mikejohnsonbeats/OG-Synth-source) | `x0x` | 990.6 KB | 116 | [OG Synth Interface](docs/OG-Synth-source.md) |
+| **OG Synth** | [mikejohnsonbeats/OG-Synth-source](https://github.com/mikejohnsonbeats/OG-Synth-source) | `x0x` | 1063.4 KB | 164 | [OG Synth Interface](docs/OG-Synth-source.md) |
 | **ATEK 303** | [animatek/FM1-Animatek](https://github.com/animatek/FM1-Animatek) | `x0x` | 131.7 KB | 35 | [ATEK 303 Interface](docs/FM1-Animatek.md) |
-| **JIANT** | [juanjiant-bit/JIANT](https://github.com/juanjiant-bit/JIANT) | `felucca` | 1170.7 KB | 50 | [JIANT Interface](docs/JIANT.md) |
+| **JIANT** | [juanjiant-bit/JIANT](https://github.com/juanjiant-bit/JIANT) | `felucca` | 1216.3 KB | 68 | [JIANT Interface](docs/JIANT.md) |
 | **Golana** | [Gadlele/Golana](https://github.com/Gadlele/Golana) | `felucca` | 501.2 KB | 29 | [Golana Interface](docs/Golana.md) |
-| **LOAF BREAKER** | [FLEXOR-R/loaf-breaker](https://github.com/FLEXOR-R/loaf-breaker) | `x0x` | 825.6 KB | 35 | [LOAF BREAKER Interface](docs/loaf-breaker.md) |
+| **LOAF BREAKER** | [FLEXOR-R/loaf-breaker](https://github.com/FLEXOR-R/loaf-breaker) | `x0x` | 825.2 KB | 35 | [LOAF BREAKER Interface](docs/loaf-breaker.md) |
 | **Blop** | [OSR-Experiment/OSR-1](https://github.com/OSR-Experiment/OSR-1) | `x0x` | 1387.0 KB | 33 | [Blop Interface](docs/OSR-1.md) |
 | **JAMTRACK** | [Philip-Bos/jamtrack-fm1](https://github.com/Philip-Bos/jamtrack-fm1) | `x0x` | 563.1 KB | 35 | [JAMTRACK Interface](docs/jamtrack-fm1.md) |
-| **PERF-1** | [deamonSLINKY/PERF-1](https://github.com/deamonSLINKY/PERF-1) | `x0x` | 689.8 KB | 22 | [PERF-1 Interface](docs/PERF-1.md) |
+| **PERF-1** | [deamonSLINKY/PERF-1](https://github.com/deamonSLINKY/PERF-1) | `x0x` | 865.5 KB | 65 | [PERF-1 Interface](docs/PERF-1.md) |
 | **M-PYRE** | [HistoryOfSky/m-pyre](https://github.com/HistoryOfSky/m-pyre) | `mpyre` | 1162.4 KB | 18 | [M-PYRE Interface](docs/m-pyre.md) |
-| **Chimera Vocal** | [shan-sherif/fm-1-chimera-vocal](https://github.com/shan-sherif/fm-1-chimera-vocal) | `x0x` | 373.5 KB | 41 | [Chimera Vocal Interface](docs/fm-1-chimera-vocal.md) |
+| **Chimera Vocal** | [shan-sherif/fm-1-chimera-vocal](https://github.com/shan-sherif/fm-1-chimera-vocal) | `x0x` | 382.3 KB | 41 | [Chimera Vocal Interface](docs/fm-1-chimera-vocal.md) |
 | **Demake** | [InigoHernandez/demake-synth](https://github.com/InigoHernandez/demake-synth) | `demake` | 625.3 KB | 16 | [Demake Interface](docs/demake-synth.md) |
-| **viscera** | [De-Pattern/viscera](https://github.com/De-Pattern/viscera) | `viscera` | 195.1 KB | 51 | [viscera Interface](docs/viscera.md) |
+| **viscera** | [De-Pattern/viscera](https://github.com/De-Pattern/viscera) | `viscera` | 202.9 KB | 51 | [viscera Interface](docs/viscera.md) |
 | **SLOOP 3** | [isod89/sloop3-fm1](https://github.com/isod89/sloop3-fm1) | `none (no browser build: installer and editor only)` | N/A | 0 | [SLOOP 3 Interface](docs/sloop3-fm1.md) |
 | **JamesOS** | [aarongrando/JamesOS](https://github.com/aarongrando/JamesOS) | `none (no browser build)` | N/A | 0 | [JamesOS Interface](docs/JamesOS.md) |
 

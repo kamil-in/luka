@@ -6,7 +6,7 @@
 > **Interface Family**: `felucca`  
 > **Source Shim**: `web/emu/felucca_web.c`  
 > **Build Instructions**: `web/emu/build.sh; published build: https://juanjiant-bit.github.io/JIANT/emu/felucca.wasm`  
-> **Binary Artifact**: `dist/JIANT.wasm` (1170.7 KB, SHA-256: `b89d3ebdd7292db1...`)  
+> **Binary Artifact**: `dist/JIANT.wasm` (1216.3 KB, SHA-256: `2b513407b6b7543b...`)  
 
 ## Overview
 
@@ -21,7 +21,7 @@ JIANT firmware for the FM-1 (Felucca-derived), with a browser emulator.
 | **Clock Model** | AudioWorklet frame pull; host calls render per audio block (128 frames / 2.9 ms) |
 | **Sample Rate** | 44,100 Hz stereo interleaved or split float32 arrays |
 | **Display Resolution** | 240 x 240 pixels (RGB565 in device byte order) |
-| **Exported Functions** | 50 exported WebAssembly functions |
+| **Exported Functions** | 68 exported WebAssembly functions |
 | **Imported Symbols** | None (self-contained) |
 
 ## Exported Interface Functions
@@ -32,6 +32,46 @@ JIANT firmware for the FM-1 (Felucca-derived), with a browser emulator.
 | :--- | :--- | :--- |
 | `emscripten_stack_get_current` | `-> uint32_t` | Get current WebAssembly execution stack pointer |
 | `setThrew` | `(uint32_t th, uint32_t val)` | Emscripten exception unwind helper |
+
+### Other
+
+| Function | Signature / Return | Description |
+| :--- | :--- | :--- |
+| `web_additive_edition` | `void` | Exported WebAssembly runtime function |
+| `web_beat_samples` | `void` | Exported WebAssembly runtime function |
+| `web_bk_buf` | `void` | Exported WebAssembly runtime function |
+| `web_bk_len` | `void` | Exported WebAssembly runtime function |
+| `web_bk_max` | `void` | Exported WebAssembly runtime function |
+| `web_bk_put` | `void` | Exported WebAssembly runtime function |
+| `web_ed` | `void` | Exported WebAssembly runtime function |
+| `web_ed_buf` | `void` | Exported WebAssembly runtime function |
+| `web_ed_reply` | `void` | Exported WebAssembly runtime function |
+| `web_editor_poll` | `void` | Exported WebAssembly runtime function |
+| `web_gen` | `void` | Exported WebAssembly runtime function |
+| `web_gen_cmd` | `void` | Exported WebAssembly runtime function |
+| `web_gen_count` | `void` | Exported WebAssembly runtime function |
+| `web_gen_genre` | `void` | Exported WebAssembly runtime function |
+| `web_gen_info` | `void` | Exported WebAssembly runtime function |
+| `web_gen_last` | `void` | Exported WebAssembly runtime function |
+| `web_gen_name` | `void` | Exported WebAssembly runtime function |
+| `web_midi_take` | `void` | Exported WebAssembly runtime function |
+| `web_midi_tap` | `void` | Exported WebAssembly runtime function |
+| `web_mix_skip` | `void` | Exported WebAssembly runtime function |
+| `web_play` | `void` | Exported WebAssembly runtime function |
+| `web_selected_engine` | `void` | Exported WebAssembly runtime function |
+| `web_song_bars` | `void` | Exported WebAssembly runtime function |
+| `web_song_cur` | `void` | Exported WebAssembly runtime function |
+| `web_song_end` | `void` | Exported WebAssembly runtime function |
+| `web_song_play` | `void` | Exported WebAssembly runtime function |
+| `web_song_rows` | `void` | Exported WebAssembly runtime function |
+| `web_song_select` | `void` | Exported WebAssembly runtime function |
+| `web_stem_out` | `void` | Exported WebAssembly runtime function |
+| `web_stems` | `void` | Exported WebAssembly runtime function |
+| `web_sysex_msg` | `void` | Exported WebAssembly runtime function |
+| `web_sysex_out` | `void` | Exported WebAssembly runtime function |
+| `web_test_heavy` | `void` | Exported WebAssembly runtime function |
+| `web_test_user_preset` | `void` | Exported WebAssembly runtime function |
+| `web_trk_live` | `void` | Exported WebAssembly runtime function |
 
 ### LEDs
 
@@ -46,31 +86,6 @@ JIANT firmware for the FM-1 (Felucca-derived), with a browser emulator.
 | `web_lit_buttons` | `-> uint32_t` | Bitmask of fully illuminated button LEDs (bit 14: PLAY green) |
 | `web_lit_keys` | `-> uint32_t` | Bitmask of fully illuminated key LEDs (27 keys) |
 | `web_mid_keys` | `-> uint32_t` | Bitmask of medium-brightness key LEDs (drum beats) |
-
-### Other
-
-| Function | Signature / Return | Description |
-| :--- | :--- | :--- |
-| `web_beat_samples` | `void` | Exported WebAssembly runtime function |
-| `web_bk_buf` | `void` | Exported WebAssembly runtime function |
-| `web_bk_len` | `void` | Exported WebAssembly runtime function |
-| `web_bk_max` | `void` | Exported WebAssembly runtime function |
-| `web_bk_put` | `void` | Exported WebAssembly runtime function |
-| `web_gen` | `void` | Exported WebAssembly runtime function |
-| `web_gen_count` | `void` | Exported WebAssembly runtime function |
-| `web_gen_last` | `void` | Exported WebAssembly runtime function |
-| `web_gen_name` | `void` | Exported WebAssembly runtime function |
-| `web_mix_skip` | `void` | Exported WebAssembly runtime function |
-| `web_play` | `void` | Exported WebAssembly runtime function |
-| `web_song_bars` | `void` | Exported WebAssembly runtime function |
-| `web_song_cur` | `void` | Exported WebAssembly runtime function |
-| `web_song_end` | `void` | Exported WebAssembly runtime function |
-| `web_song_play` | `void` | Exported WebAssembly runtime function |
-| `web_song_rows` | `void` | Exported WebAssembly runtime function |
-| `web_song_select` | `void` | Exported WebAssembly runtime function |
-| `web_test_heavy` | `void` | Exported WebAssembly runtime function |
-| `web_test_user_preset` | `void` | Exported WebAssembly runtime function |
-| `web_trk_live` | `void` | Exported WebAssembly runtime function |
 
 ### Lifecycle
 
@@ -123,6 +138,7 @@ JIANT firmware for the FM-1 (Felucca-derived), with a browser emulator.
 | Function | Signature / Return | Description |
 | :--- | :--- | :--- |
 | `web_playing` | `-> uint32_t (bool)` | Whether sequencer/song playback is currently running |
+| `web_version` | `-> char*` | Firmware build version identifier string |
 
 ### Display
 
@@ -130,6 +146,13 @@ JIANT firmware for the FM-1 (Felucca-derived), with a browser emulator.
 | :--- | :--- | :--- |
 | `web_screen` | `-> uint16_t*` | Pointer to 240x240 RGB565 framebuffer in panel byte order |
 | `web_screen_draws` | `-> uint32_t` | Incrementing screen redraw counter (redraw when changed) |
+
+### SysEx
+
+| Function | Signature / Return | Description |
+| :--- | :--- | :--- |
+| `web_sysex` | `(uint32_t n)` | Process incoming SysEx message of n bytes |
+| `web_sysex_buf` | `-> uint8_t*` | Buffer for outgoing SysEx data |
 
 ## Integration with FM-1 Adapter Player
 
