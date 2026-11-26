@@ -1,8 +1,8 @@
 # FM-1 Firmware Interface Catalog & Specification
 
-This document provides the complete interface documentation for all 35 community firmwares built for the M-VAVE FM-1 pocket synthesizer, detailing their WebAssembly export and import contracts, control schemas, and audio/video interfaces.
+This document provides the complete interface documentation for all 36 community firmwares built for the M-VAVE FM-1 pocket synthesizer, detailing their WebAssembly export and import contracts, control schemas, and audio/video interfaces.
 
-## Firmware Summary Matrix (35 Firmwares)
+## Firmware Summary Matrix (36 Firmwares)
 
 | Firmware | Repository | Style Family | Wasm Size | Exports | Detailed Spec |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -41,6 +41,7 @@ This document provides the complete interface documentation for all 35 community
 | **viscera** | [De-Pattern/viscera](https://github.com/De-Pattern/viscera) | `viscera` | 202.9 KB | 51 | [viscera Interface](docs/viscera.md) |
 | **SLOOP 3** | [isod89/sloop3-fm1](https://github.com/isod89/sloop3-fm1) | `none (no browser build: installer and editor only)` | N/A | 0 | [SLOOP 3 Interface](docs/sloop3-fm1.md) |
 | **JamesOS** | [aarongrando/JamesOS](https://github.com/aarongrando/JamesOS) | `none (no browser build)` | N/A | 0 | [JamesOS Interface](docs/JamesOS.md) |
+| **h1** | [jakehandy/h1](https://github.com/jakehandy/h1) | `x0x` | 566.2 KB | 35 | [h1 Interface](docs/h1.md) |
 
 ---
 

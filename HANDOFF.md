@@ -275,6 +275,25 @@ Open questions for the owner: the keys' bottom edge versus the stage's at small 
 the spacing, or give the stage a larger minimum); whether 546 px of right column is too wide for
 laptops (the stage gives up the width, 404 px at 1024).
 
+## All builds updated; h1 added, built here (2026-11-26)
+
+36 repos are followed now; **33 builds play in the app**.
+
+- **Update:** every repo fetched and fast-forwarded; 13 builds changed (Aisling, Arctic Scream,
+  Chimera Vocal, FRASIL, JIANT, LOAF BREAKER, Loom, Melodee, OG Synth, PERF-1, Skiff, viscera, X0X).
+  `dist/felucca.wasm` was renamed `Felucca.wasm`, the name the scripts use: Windows never saw the
+  difference, Linux did (the docs generator called Felucca's build missing).
+- **h1** (jakehandy/h1): fm1-base, plays as `x0x`. It publishes **no browser build**, so it is the
+  first firmware Luka builds itself: `build.sh --web` (needs a recent emcc; Ubuntu's 3.1.6 lacks
+  `-sSTACK_SIZE`). Upstream does not compile for the web: fm1-base's `emu_web.c` includes `app.c` and
+  has its own global `ring`, which h1's loop store also uses. `firmwares/patches/h1/` renames h1's
+  `loop_ring`. `build-firmwares.ps1` now takes `patches/<id>/*.patch` off before an update and puts
+  them back after (warns if one no longer applies), and passes `BuildArgs` to a build script.
+  The build is reproducible (a clean rebuild is byte-identical); h1's host build still compiles.
+  It is measured as starting by itself, so it loads stopped.
+- Checked: all 33 load on the page at their latest commits, no console errors; h1 draws (COZY),
+  takes notes and changes instrument on PRESETS. Not listened to.
+
 ## Five more repos, two new adapters, all updated (2026-11-21)
 
 35 repos are followed now; **32 builds play in the app** (Felucca stays emulated; SLOOP 3 and JamesOS

@@ -1,6 +1,6 @@
 # FM-1 Community Firmwares Automation & Interface Documentation
 
-This directory contains the automated single-click tooling to clone, update, build, and document all 35 community firmwares for the M-VAVE FM-1 pocket synthesizer.
+This directory contains the automated single-click tooling to clone, update, build, and document all 36 community firmwares for the M-VAVE FM-1 pocket synthesizer.
 
 ## Single-Click Execution
 
@@ -17,11 +17,11 @@ You can run the entire workflow in **one click**:
 
 ### What the Script Does Automatically
 
-1. **Clones & Updates**: Loops through all 35 community repositories, clones any missing ones, fetches every branch (some builds come from `gh-pages`), switches to each repository's own default branch and fast-forwards it.
+1. **Clones & Updates**: Loops through all 36 community repositories, clones any missing ones, fetches every branch (some builds come from `gh-pages`), switches to each repository's own default branch and fast-forwards it. Luka's own changes to a firmware (`patches/<id>/*.patch`) are taken off before the update and put back on after it.
 2. **Generates / Retrieves Native Web WASM**:
    - Executes repo build instructions if compilation tools (`emcc`, `clang`, `wasi-sdk`, `zig`) are installed on the host.
    - Reliably extracts and verifies the official native web WebAssembly artifact produced by the repo's instructions (from repository paths, build branches, or release artifacts).
-   - Places all 33 output WASM binaries in `firmwares/dist/`.
+   - Places all 34 output WASM binaries in `firmwares/dist/`.
 3. **Generates Full Interface Documentation**:
    - Dynamically reflects exported and imported WebAssembly functions from each binary.
    - Generates individual specification documents in `firmwares/docs/<firmware>.md`.
@@ -30,7 +30,7 @@ You can run the entire workflow in **one click**:
 
 ---
 
-## Repositories Covered (35 Firmwares)
+## Repositories Covered (36 Firmwares)
 
 | Firmware | Repository | Branch | Interface Style |
 | :--- | :--- | :--- | :--- |
@@ -69,6 +69,18 @@ You can run the entire workflow in **one click**:
 | **viscera** | [De-Pattern/viscera](https://github.com/De-Pattern/viscera) | `main` | `viscera` |
 | **SLOOP 3** | [isod89/sloop3-fm1](https://github.com/isod89/sloop3-fm1) | `main` | none (no browser build) |
 | **JamesOS** | [aarongrando/JamesOS](https://github.com/aarongrando/JamesOS) | `main` | none (no browser build) |
+| **h1** | [jakehandy/h1](https://github.com/jakehandy/h1) | `main` | `x0x` (built here, see below) |
+
+### h1: built here, with a patch
+
+h1 publishes no browser build, so the script builds one: `build.sh --web` in its repository (fm1-base's
+`tools/build.py app --web`), which needs **Emscripten** (`emcc`, a recent one: Ubuntu's 3.1.6 is too old; `emsdk install latest`
+works). Upstream h1 does not compile for the browser as it is: fm1-base's emulator (`base/web/emu/emu_web.c`) compiles
+`app/app.c` into its own file and keeps its audio output in a global named `ring`, and h1's loop store has the same name.
+[`patches/h1/0001-web-emulator-loop-ring-name.patch`](patches/h1/0001-web-emulator-loop-ring-name.patch) renames the loop store
+`loop_ring`; nothing else changes, and the device build is unaffected. Without `emcc` the build already in `dist/h1.wasm`
+stays. If an update to h1 stops the patch applying, the script warns: update the patch (or drop it, once h1 fixes the
+name itself).
 
 ---
 
@@ -80,9 +92,9 @@ firmwares/
 ├── build-firmwares.ps1           # Main PowerShell automation script
 ├── extract-artifacts.mjs         # Verified WASM artifact extraction & retrieval
 ├── generate-interface-docs.mjs   # WebAssembly reflection & markdown generator
-├── INTERFACES.md                 # Master interface specification and comparison catalog (35 firmwares)
+├── INTERFACES.md                 # Master interface specification and comparison catalog (36 firmwares)
 ├── README.md                     # This documentation
-├── docs/                         # Detailed interface specifications for all 35 firmwares
+├── docs/                         # Detailed interface specifications for all 36 firmwares
 │   ├── Arctic-scream-FM-1.md
 │   ├── CoralFlower.md
 │   ├── Felucca.md
@@ -104,8 +116,10 @@ firmwares/
 │   ├── SATIE-1.md
 │   ├── skiff.md
 │   └── zen-1.md
+├── patches/                      # Luka's own changes to a firmware, applied after each update (h1)
+│   └── h1/*.patch
 ├── dist/                         # Web native WASM binaries & machine-readable manifest
-│   ├── *.wasm (33 binaries)
+│   ├── *.wasm (34 binaries)
 │   └── manifest.json
 └── [cloned repositories: 21 firmware source repos]
 ```
